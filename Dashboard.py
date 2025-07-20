@@ -116,6 +116,7 @@ with col_news:
                         unsafe_allow_html=True,
                     )
                     st.markdown(f"**{art['title']}**")
+                    st.markdown(f"[Read more]({feature['url']})")
             st.markdown("<div style='height:30px;'></div>", unsafe_allow_html=True)
     
 
