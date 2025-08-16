@@ -462,6 +462,3 @@ else:
     st.warning("No MOVE data.")
 
 
-st.header("5 · Primary-Market Issuance — coming soon")
-st.header("6 · Fund Flows & Liquidity — coming soon")
-st.header("7 · Relative-Value Screener — coming soon")
