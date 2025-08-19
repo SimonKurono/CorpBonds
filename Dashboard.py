@@ -1,10 +1,5 @@
 # app.py  ─────────────────────────────────────────────────────────
-"""Raffles Advisors – US Corporate-Bond Dashboard (Streamlit).
-
-Notes:
-- Formatting only: no functional changes intended.
-- Consolidated chart defaults, constants, typing, and section structure.
-"""
+"""Raffles Advisors – US Corporate-Bond Dashboard (Streamlit)."""
 
 from __future__ import annotations
 
