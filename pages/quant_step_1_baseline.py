@@ -28,7 +28,7 @@ def default_window() -> Tuple[datetime, datetime, str]:
 
 
 @st.cache_data(ttl=600, show_spinner=False)
-    def load_history(symbol: str, start: datetime, end: datetime, interval: str) -> pd.DataFrame:
+def load_history(symbol: str, start: datetime, end: datetime, interval: str) -> pd.DataFrame:
     """Download OHLCV with auto-adjust. Falls back to 1d if intraday fails."""
     if not symbol:
         return pd.DataFrame()
