@@ -36,7 +36,7 @@ def load_history(symbol: str, start: datetime, end: datetime, interval: str) -> 
         df = yf.download(
         symbol,
         start=start,
-        end=end + timedelta(days=1), # include end-date
+        end=end + timedelta(days=1),
         interval=interval,
         auto_adjust=True,
         progress=False,
