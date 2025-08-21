@@ -51,3 +51,12 @@ def load_history(symbol: str, start: datetime, end: datetime, interval: str) -> 
     # Normalize columns to Title case (Open, High, Low, Close, Volume)
     df.rename(columns=str.capitalize, inplace=True)
     return df
+
+def plot_line(df: pd.DataFrame, title: str) -> None:
+    if df is None or df.empty: 
+        st.warning("No data for this ticker/range")
+        return
+    y = df["Close"] if "Close" in df.columns else df.select_dtypes("number".iloc[:, 0])
+    fig = go.Figure(go.Scatter(x = df.index, y=y, mode =- "lines", name = title))
+    fig.update_layout(height=460, margin=dict(l=8, r=8, t=40, b=8), title=title)
+    st.plotly_chart(fig, use_container_width=True)
