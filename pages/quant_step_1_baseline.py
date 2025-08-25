@@ -60,3 +60,25 @@ def plot_line(df: pd.DataFrame, title: str) -> None:
     fig = go.Figure(go.Scatter(x = df.index, y=y, mode =- "lines", name = title))
     fig.update_layout(height=460, margin=dict(l=8, r=8, t=40, b=8), title=title)
     st.plotly_chart(fig, use_container_width=True)
+    
+symbol = st.text_input("Ticker", placeholder="e.g., LQD, IEF, TLT, AAPL").strip().upper()
+
+
+if symbol:
+    start, end, interval = default_window()
+    df = load_history(symbol, start, end, interval)
+
+
+    col_plot, col_meta = st.columns([3, 2])
+    with col_plot:
+        plot_line(df, symbol)
+    with col_meta:
+        st.subheader("Snapshot (raw)")
+        # Keep this very light for now; we'll replace with a proper meta card later
+        if not df.empty:
+            st.caption("Last 5 rows")
+            st.dataframe(df.tail(5))
+        else:
+            st.info("No data downloaded yet.")
+else:
+    st.info("Enter a ticker to start. We'll add search & timeframes in Step 2.")
