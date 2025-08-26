@@ -1,3 +1,10 @@
+# quant_step1_baseline.py
+# -------------------------------------------------------------
+# STEP 1 — the smallest vertical slice:
+# Input a ticker → fetch 6M daily prices via yfinance → plot a clean line chart.
+# Keep it tiny, typed, and testable. We'll add timeframes/search/providers next.
+# -------------------------------------------------------------
+
 from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import Tuple
@@ -6,26 +13,32 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 import yfinance as yf
-# ---------------------------
-# Page setup
-# ---------------------------
+
+
 st.set_page_config(page_title="Quant — Step 1 (Baseline)", layout="wide")
 st.title("Quant — Baseline Chart")
 
-# We'll make TZ configurable later; for now fix to PT as your local default
-TZ = timezone(timedelta(hours=-7))  # America/Vancouver-ish
+from zoneinfo import ZoneInfo
+TZ = ZoneInfo("America/Vancouver")
 
-# ---------------------------
-# Pure helpers (tiny and typed)
-# ---------------------------
+
+
+def get_full_data(ticker: str) -> pd.DataFrame:
+    return yf.download(str)
+
+@st.cache_data(ttl=60*60*60, show_spinner=False)
+def get_filtered_data(series: pd.DataFrame, start_date: datetime, end_date: datetime) -> pd.DataFrame:
+    filtered_data = series[series.index < end_date and series.index > start_date]
+    return filtered_data
+
+
+
 
 def default_window() -> Tuple[datetime, datetime, str]:
     """Return the default lookback and interval: ~6 months of daily data."""
-    end = datetime.now(tz=TZ)
+    end = datetime.now(TZ)
     start = end - timedelta(days=185)
     return start, end, "1d"
-
-
 
 @st.cache_data(ttl=600, show_spinner=False)
 def load_history(symbol: str, start: datetime, end: datetime, interval: str) -> pd.DataFrame:
@@ -34,40 +47,50 @@ def load_history(symbol: str, start: datetime, end: datetime, interval: str) -> 
         return pd.DataFrame()
     try:
         df = yf.download(
-        symbol,
-        start=start,
-        end=end + timedelta(days=1),
-        interval=interval,
-        auto_adjust=True,
-        progress=False,
+            symbol,
+            start=start.replace(tzinfo=None),
+            end=(end + timedelta(days=1)).replace(tzinfo=None),  # ensure naive datetimes
+            interval=interval,
+            auto_adjust=True,
+            progress=False,
         )
         if df.empty and interval != "1d":
-            df = yf.download(symbol, start=start, end=end + timedelta(days=1), interval="1d", auto_adjust=True, progress=False)
+            df = yf.download(
+                symbol,
+                start=start.replace(tzinfo=None),
+                end=(end + timedelta(days=1)).replace(tzinfo=None),
+                interval="1d",
+                auto_adjust=True,
+                progress=False,
+            )
     except Exception:
         df = pd.DataFrame()
-        if df.empty:
-            return df
+    if df.empty:
+        return df
     df.index = pd.to_datetime(df.index)
     # Normalize columns to Title case (Open, High, Low, Close, Volume)
     df.rename(columns=str.capitalize, inplace=True)
     return df
 
 def plot_line(df: pd.DataFrame, title: str) -> None:
-    if df is None or df.empty: 
-        st.warning("No data for this ticker/range")
+    if df is None or df.empty:
+        st.warning("No data for this ticker/range.")
         return
-    y = df["Close"] if "Close" in df.columns else df.select_dtypes("number".iloc[:, 0])
-    fig = go.Figure(go.Scatter(x = df.index, y=y, mode =- "lines", name = title))
+    # Prefer Close if present; else first numeric column
+    y = df["Close"] if "Close" in df.columns else df.select_dtypes(include=["number"]).iloc[:, 0]
+    fig = go.Figure(go.Scatter(x=df.index, y=y, mode="lines", name=title))
     fig.update_layout(height=460, margin=dict(l=8, r=8, t=40, b=8), title=title)
     st.plotly_chart(fig, use_container_width=True)
-    
-symbol = st.text_input("Ticker", placeholder="e.g., LQD, IEF, TLT, AAPL").strip().upper()
 
+# ---------------------------
+# UI (intentionally minimal for Step 1)
+# ---------------------------
+
+symbol = st.text_input("Ticker", placeholder="e.g., LQD, IEF, TLT, AAPL").strip().upper()
 
 if symbol:
     start, end, interval = default_window()
     df = load_history(symbol, start, end, interval)
-
 
     col_plot, col_meta = st.columns([3, 2])
     with col_plot:
@@ -82,3 +105,10 @@ if symbol:
             st.info("No data downloaded yet.")
 else:
     st.info("Enter a ticker to start. We'll add search & timeframes in Step 2.")
+
+# ---------------------------
+# Manual acceptance for Step 1
+# - Input a ticker (try LQD, IEF, TLT, AAPL)
+# - You see a 6M daily line chart and a small data preview.
+# - Empty/invalid tickers fail gracefully with a warning.
+# ---------------------------
