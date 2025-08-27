@@ -6,8 +6,9 @@
 # -------------------------------------------------------------
 
 from __future__ import annotations
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import Tuple
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -18,20 +19,7 @@ import yfinance as yf
 st.set_page_config(page_title="Quant — Step 1 (Baseline)", layout="wide")
 st.title("Quant — Baseline Chart")
 
-from zoneinfo import ZoneInfo
 TZ = ZoneInfo("America/Vancouver")
-
-
-
-def get_full_data(ticker: str) -> pd.DataFrame:
-    return yf.download(str)
-
-@st.cache_data(ttl=60*60*60, show_spinner=False)
-def get_filtered_data(series: pd.DataFrame, start_date: datetime, end_date: datetime) -> pd.DataFrame:
-    filtered_data = series[series.index < end_date and series.index > start_date]
-    return filtered_data
-
-
 
 
 def default_window() -> Tuple[datetime, datetime, str]:
@@ -77,9 +65,16 @@ def plot_line(df: pd.DataFrame, title: str) -> None:
         st.warning("No data for this ticker/range.")
         return
     # Prefer Close if present; else first numeric column
-    y = df["Close"] if "Close" in df.columns else df.select_dtypes(include=["number"]).iloc[:, 0]
-    fig = go.Figure(go.Scatter(x=df.index, y=y, mode="lines", name=title))
-    fig.update_layout(height=460, margin=dict(l=8, r=8, t=40, b=8), title=title)
+    y_col = "Close" if "Close" in df.columns else df.select_dtypes(include=["number"]).columns[0]
+    fig = go.Figure(go.Scatter(x=df.index, y=df[y_col], mode="lines", name=title))
+    
+    # Add template="plotly_dark" to make the line visible on dark backgrounds
+    fig.update_layout(
+        template="plotly_dark",
+        height=460, 
+        margin=dict(l=8, r=8, t=40, b=8), 
+        title=title
+    )
     st.plotly_chart(fig, use_container_width=True)
 
 # ---------------------------
@@ -105,10 +100,3 @@ if symbol:
             st.info("No data downloaded yet.")
 else:
     st.info("Enter a ticker to start. We'll add search & timeframes in Step 2.")
-
-# ---------------------------
-# Manual acceptance for Step 1
-# - Input a ticker (try LQD, IEF, TLT, AAPL)
-# - You see a 6M daily line chart and a small data preview.
-# - Empty/invalid tickers fail gracefully with a warning.
-# ---------------------------
