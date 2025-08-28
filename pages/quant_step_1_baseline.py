@@ -14,9 +14,6 @@ def get_stock_data(ticker_symbol, start_date, end_date):
             st.error(f"No data found for ticker '{ticker_symbol}'. It might be an invalid ticker or delisted.")
             return None
         
-        # --- FIX: Remove timezone information to prevent plotting issues ---
-        # yfinance can sometimes return timezone-aware indices, which can confuse Plotly.
-        # This line converts the index to timezone-naive datetime objects.
         if pd.api.types.is_datetime64_any_dtype(data.index):
              data.index = data.index.tz_localize(None)
 
@@ -60,7 +57,7 @@ def plot_normalized_data(data, benchmark_data, primary_ticker, benchmark_ticker)
     )
     return fig
 
-
+#--------- PAGE DISPLAY ------------------------------
 st.set_page_config(layout="wide")
 st.title("Financial Asset Search & Analysis")
 
