@@ -1,102 +1,88 @@
-# quant_step1_baseline.py
-# -------------------------------------------------------------
-# STEP 1 — the smallest vertical slice:
-# Input a ticker → fetch 6M daily prices via yfinance → plot a clean line chart.
-# Keep it tiny, typed, and testable. We'll add timeframes/search/providers next.
-# -------------------------------------------------------------
-
-from __future__ import annotations
-from datetime import datetime, timedelta
-from typing import Tuple
-from zoneinfo import ZoneInfo
-
-import pandas as pd
-import plotly.graph_objects as go
 import streamlit as st
+import pandas as pd
 import yfinance as yf
+import plotly.graph_objects as go
 
-
-st.set_page_config(page_title="Quant — Step 1 (Baseline)", layout="wide")
-st.title("Quant — Baseline Chart")
-
-TZ = ZoneInfo("America/Vancouver")
-
-
-def default_window() -> Tuple[datetime, datetime, str]:
-    """Return the default lookback and interval: ~6 months of daily data."""
-    end = datetime.now(TZ)
-    start = end - timedelta(days=185)
-    return start, end, "1d"
-
-@st.cache_data(ttl=600, show_spinner=False)
-def load_history(symbol: str, start: datetime, end: datetime, interval: str) -> pd.DataFrame:
-    """Download OHLCV with auto-adjust. Falls back to 1d if intraday fails."""
-    if not symbol:
-        return pd.DataFrame()
+def get_stock_data(ticker_symbol, start_date, end_date):
+    """
+    Fetches historical stock data from Yahoo Finance for a given ticker.
+    Includes error handling for invalid tickers or data fetching issues.
+    """
     try:
-        df = yf.download(
-            symbol,
-            start=start.replace(tzinfo=None),
-            end=(end + timedelta(days=1)).replace(tzinfo=None),  # ensure naive datetimes
-            interval=interval,
-            auto_adjust=True,
-            progress=False,
-        )
-        if df.empty and interval != "1d":
-            df = yf.download(
-                symbol,
-                start=start.replace(tzinfo=None),
-                end=(end + timedelta(days=1)).replace(tzinfo=None),
-                interval="1d",
-                auto_adjust=True,
-                progress=False,
-            )
-    except Exception:
-        df = pd.DataFrame()
-    if df.empty:
-        return df
-    df.index = pd.to_datetime(df.index)
-    # Normalize columns to Title case (Open, High, Low, Close, Volume)
-    df.rename(columns=str.capitalize, inplace=True)
-    return df
+        data = yf.download(ticker_symbol, start=start_date, end=end_date, progress=False)
+        if data.empty:
+            st.error(f"No data found for ticker '{ticker_symbol}'. It might be an invalid ticker or delisted.")
+            return None
+        return data
+    except Exception as e:
+        st.error(f"An error occurred while fetching data for {ticker_symbol}: {e}")
+        return None
 
-def plot_line(df: pd.DataFrame, title: str) -> None:
-    if df is None or df.empty:
-        st.warning("No data for this ticker/range.")
-        return
-    # Prefer Close if present; else first numeric column
-    y_col = "Close" if "Close" in df.columns else df.select_dtypes(include=["number"]).columns[0]
-    fig = go.Figure(go.Scatter(x=df.index, y=df[y_col], mode="lines", name=title))
-    
-    # Add template="plotly_dark" to make the line visible on dark backgrounds
+def plot_stock_data(data, benchmark_data, primary_ticker, benchmark_ticker):
+    """
+    Creates an interactive Plotly chart with the stock's closing price.
+    Optionally overlays a benchmark's closing price.
+    """
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(x=data.index, y=data['Close'], mode='lines', name=primary_ticker))
+
+    if benchmark_data is not None and not benchmark_data.empty:
+        fig.add_trace(go.Scatter(x=benchmark_data.index, y=benchmark_data['Close'], mode='lines', name=f"{benchmark_ticker} (Benchmark)", line=dict(dash='dot', color='orange')))
+
     fig.update_layout(
-        template="plotly_dark",
-        height=460, 
-        margin=dict(l=8, r=8, t=40, b=8), 
-        title=title
+        title=f'{primary_ticker} vs. {benchmark_ticker}' if benchmark_ticker else f'{primary_ticker} Stock Price',
+        xaxis_title='Date',
+        yaxis_title='Price (USD)',
+        legend_title='Ticker',
+        template='plotly_white'
     )
-    st.plotly_chart(fig, use_container_width=True)
+    return fig
 
-# ---------------------------
-# UI (intentionally minimal for Step 1)
-# ---------------------------
 
-symbol = st.text_input("Ticker", placeholder="e.g., LQD, IEF, TLT, AAPL").strip().upper()
+st.set_page_config(layout="wide")
+st.title("Financial Asset Search & Analysis")
 
-if symbol:
-    start, end, interval = default_window()
-    df = load_history(symbol, start, end, interval)
+# --- User Inputs in the Sidebar ---
+st.header("Search Parameters")
+primary_ticker = st.text_input("Enter a Stock or ETF Ticker", "AAPL").upper()
+benchmark_ticker = st.text_input("Enter a Benchmark Ticker (Optional)", "SPY").upper()
 
-    col_plot, col_meta = st.columns([3, 2])
-    with col_plot:
-        plot_line(df, symbol)
-    with col_meta:
-        st.subheader("Snapshot (raw)")
-        # Keep this very light for now; we'll replace with a proper meta card later
-        if not df.empty:
-            st.caption("Last 5 rows")
-            st.dataframe(df.tail(5))
-        else:
-            st.info("No data downloaded yet.")
-else:
-    st.info("Enter a ticker to start. We'll add search & timeframes in Step 2.")
+col1, col2 = st.columns(2)
+with col1:
+    start_date = st.date_input("Start Date", pd.to_datetime("2023-01-01"))
+with col2:
+    end_date = st.date_input("End Date", pd.to_datetime("today"))
+
+# --- Main Page Logic ---
+if primary_ticker:
+    stock_data = get_stock_data(primary_ticker, start_date, end_date)
+
+    if stock_data is not None:
+        ticker_info = yf.Ticker(primary_ticker)
+        
+        st.header(f"{ticker_info.info.get('longName', primary_ticker)} ({primary_ticker})")
+        
+        # --- Display Company Info and Price Chart in columns ---
+        info_col, chart_col = st.columns([1, 2]) # Give more space to the chart
+
+        with info_col:
+            st.subheader("Company Profile")
+            st.markdown(f"**Sector:** {ticker_info.info.get('sector', 'N/A')}")
+            st.markdown(f"**Industry:** {ticker_info.info.get('industry', 'N/A')}")
+            st.markdown(f"**Website:** [{ticker_info.info.get('website', 'N/A')}]({ticker_info.info.get('website', 'N/A')})")
+            with st.expander("Business Summary"):
+                st.write(ticker_info.info.get('longBusinessSummary', 'No description available.'))
+
+        with chart_col:
+            st.subheader("Price Chart")
+            benchmark_data = None
+            if benchmark_ticker:
+                benchmark_data = get_stock_data(benchmark_ticker, start_date, end_date)
+            
+            fig = plot_stock_data(stock_data, benchmark_data, primary_ticker, benchmark_ticker)
+            st.plotly_chart(fig, use_container_width=True)
+
+        # --- Display Raw Data Snapshot ---
+        st.subheader("Raw Data Snapshot")
+        st.dataframe(stock_data.tail())
