@@ -13,27 +13,48 @@ def get_stock_data(ticker_symbol, start_date, end_date):
         if data.empty:
             st.error(f"No data found for ticker '{ticker_symbol}'. It might be an invalid ticker or delisted.")
             return None
+        
+        # --- FIX: Remove timezone information to prevent plotting issues ---
+        # yfinance can sometimes return timezone-aware indices, which can confuse Plotly.
+        # This line converts the index to timezone-naive datetime objects.
+        if pd.api.types.is_datetime64_any_dtype(data.index):
+             data.index = data.index.tz_localize(None)
+
         return data
     except Exception as e:
         st.error(f"An error occurred while fetching data for {ticker_symbol}: {e}")
         return None
 
-def plot_stock_data(data, benchmark_data, primary_ticker, benchmark_ticker):
+def plot_normalized_data(data, benchmark_data, primary_ticker, benchmark_ticker):
     """
-    Creates an interactive Plotly chart with the stock's closing price.
-    Optionally overlays a benchmark's closing price.
+    Creates an interactive Plotly chart showing normalized performance.
+    This is better for benchmarking as it shows relative performance instead of absolute price.
     """
     fig = go.Figure()
+    
+    # reset data to fit plotly
+    data.columns = ["Close", "High", "Low", "Open", "Volume"]
+    benchmark_data.columns = ["Close", "High", "Low", "Open", "Volume"]
+    
+    
+    # --- Normalize the data ---
+    # We divide each closing price by the very first closing price and multiply by 100.
+    # This makes both series start at 100, allowing for a fair performance comparison.
+    primary_normalized = (data['Close'] / data['Close'].iloc[0]) * 100
+    
+    # Add primary stock trace
+    fig.add_trace(go.Scatter(x=primary_normalized.index, y=primary_normalized, mode='lines', name=primary_ticker))
 
-    fig.add_trace(go.Scatter(x=data.index, y=data['Close'], mode='lines', name=primary_ticker))
-
+    # Add benchmark trace if data is available
     if benchmark_data is not None and not benchmark_data.empty:
-        fig.add_trace(go.Scatter(x=benchmark_data.index, y=benchmark_data['Close'], mode='lines', name=f"{benchmark_ticker} (Benchmark)", line=dict(dash='dot', color='orange')))
+        benchmark_normalized = (benchmark_data['Close'] / benchmark_data['Close'].iloc[0]) * 100
+        fig.add_trace(go.Scatter(x=benchmark_normalized.index, y=benchmark_normalized, mode='lines', name=f"{benchmark_ticker} (Benchmark)", line=dict(dash='dot', color='orange')))
 
+    # Customize layout for the normalized chart
     fig.update_layout(
-        title=f'{primary_ticker} vs. {benchmark_ticker}' if benchmark_ticker else f'{primary_ticker} Stock Price',
+        title=f'Performance: {primary_ticker} vs. {benchmark_ticker}' if benchmark_ticker else f'{primary_ticker} Performance',
         xaxis_title='Date',
-        yaxis_title='Price (USD)',
+        yaxis_title='Normalized Price (Start = 100)',
         legend_title='Ticker',
         template='plotly_white'
     )
@@ -44,11 +65,11 @@ st.set_page_config(layout="wide")
 st.title("Financial Asset Search & Analysis")
 
 # --- User Inputs in the Sidebar ---
-st.header("Search Parameters")
-primary_ticker = st.text_input("Enter a Stock or ETF Ticker", "AAPL").upper()
-benchmark_ticker = st.text_input("Enter a Benchmark Ticker (Optional)", "SPY").upper()
+st.sidebar.header("Search Parameters")
+primary_ticker = st.sidebar.text_input("Enter a Stock or ETF Ticker", "AAPL").upper()
+benchmark_ticker = st.sidebar.text_input("Enter a Benchmark Ticker (Optional)", "SPY").upper()
 
-col1, col2 = st.columns(2)
+col1, col2 = st.sidebar.columns(2)
 with col1:
     start_date = st.date_input("Start Date", pd.to_datetime("2023-01-01"))
 with col2:
@@ -75,14 +96,17 @@ if primary_ticker:
                 st.write(ticker_info.info.get('longBusinessSummary', 'No description available.'))
 
         with chart_col:
-            st.subheader("Price Chart")
+            st.subheader("Performance Chart")
             benchmark_data = None
             if benchmark_ticker:
                 benchmark_data = get_stock_data(benchmark_ticker, start_date, end_date)
             
-            fig = plot_stock_data(stock_data, benchmark_data, primary_ticker, benchmark_ticker)
-            st.plotly_chart(fig, use_container_width=True)
+            # Use the new normalized plotting function
+            if stock_data is not None and not stock_data.empty:
+                fig = plot_normalized_data(stock_data, benchmark_data, primary_ticker, benchmark_ticker)
+                st.plotly_chart(fig, use_container_width=True)
 
         # --- Display Raw Data Snapshot ---
         st.subheader("Raw Data Snapshot")
         st.dataframe(stock_data.tail())
+
