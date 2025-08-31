@@ -63,10 +63,10 @@ st.title("Financial Asset Search & Analysis")
 
 # --- User Inputs in the Sidebar ---
 st.sidebar.header("Search Parameters")
-primary_ticker = st.sidebar.text_input("Enter a Stock or ETF Ticker", "AAPL").upper()
-benchmark_ticker = st.sidebar.text_input("Enter a Benchmark Ticker (Optional)", "SPY").upper()
+primary_ticker = st.text_input("Enter a Stock or ETF Ticker", "AAPL").upper()
+benchmark_ticker = st.text_input("Enter a Benchmark Ticker (Optional)", "SPY").upper()
 
-col1, col2 = st.sidebar.columns(2)
+col1, col2 = st.columns(2)
 with col1:
     start_date = st.date_input("Start Date", pd.to_datetime("2023-01-01"))
 with col2:
