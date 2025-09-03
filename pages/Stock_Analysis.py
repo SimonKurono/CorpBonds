@@ -86,8 +86,14 @@ if primary_ticker:
         st.header(f"{ticker_info.info.get('longName', primary_ticker)} ({primary_ticker})")
         
         st.markdown("Run Analysis")
-        st.button(label="Monte Carlo")
-        st.button(label="Moving Average")
+        monte_carlo, moving_average, relative_value = st.columns(3)
+        with monte_carlo:
+            st.button(label="Monte Carlo")
+        with moving_average:
+            st.button(label="Moving Average")
+        with relative_value:
+            st.button(label="Relative Value")
+        
         
         # --- Display Company Info and Price Chart in columns ---
         info_col, chart_col = st.columns([1, 2]) # Give more space to the chart
