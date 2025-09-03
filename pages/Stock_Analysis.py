@@ -62,7 +62,7 @@ st.set_page_config(layout="wide")
 st.title("Financial Asset Search & Analysis")
 
 # --- User Inputs in the Sidebar ---
-st.sidebar.header("Search Parameters")
+st.header("Search Parameters")
 ticker_col1, ticker_col2, col1, col2 = st.columns(4)
 
 with ticker_col1:
@@ -85,14 +85,7 @@ if primary_ticker:
         
         st.header(f"{ticker_info.info.get('longName', primary_ticker)} ({primary_ticker})")
         
-        st.markdown("Run Analysis")
-        monte_carlo, moving_average, relative_value = st.columns(3)
-        with monte_carlo:
-            st.button(label="Monte Carlo")
-        with moving_average:
-            st.button(label="Moving Average")
-        with relative_value:
-            st.button(label="Relative Value")
+        
         
         
         # --- Display Company Info and Price Chart in columns ---
@@ -102,9 +95,18 @@ if primary_ticker:
             st.subheader("Company Profile")
             st.markdown(f"**Sector:** {ticker_info.info.get('sector', 'N/A')}")
             st.markdown(f"**Industry:** {ticker_info.info.get('industry', 'N/A')}")
-            st.markdown(f"**Website:** [{ticker_info.info.get('website', 'N/A')}]({ticker_info.info.get('website', 'N/A')})")
+            #st.markdown(f"**Website:** [{ticker_info.info.get('website', 'N/A')}]({ticker_info.info.get('website', 'N/A')})")
             with st.expander("Business Summary"):
                 st.write(ticker_info.info.get('longBusinessSummary', 'No description available.'))
+            
+            st.markdown("**Run Analysis**")
+            monte_carlo, moving_average, relative_value = st.columns(3)
+            with monte_carlo:
+                st.button(label="Monte Carlo", use_container_width=True)
+            with moving_average:
+                st.button(label="Moving Average",use_container_width=True)
+            with relative_value:
+                st.button(label="Relative Value", use_container_width=True)
 
         with chart_col:
             st.subheader("Performance Chart")
