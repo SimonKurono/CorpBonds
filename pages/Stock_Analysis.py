@@ -102,7 +102,7 @@ if primary_ticker:
             st.markdown("**Run Analysis**")
             monte_carlo, moving_average, relative_value = st.columns(3)
             with monte_carlo:
-                st.button(label="Monte Carlo", use_container_width=True)
+                st.button(label="Monte Carlo", type="primary", use_container_width=True)
             with moving_average:
                 st.button(label="Moving Average",use_container_width=True)
             with relative_value:
