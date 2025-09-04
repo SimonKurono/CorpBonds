@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import yfinance as yf
 import plotly.graph_objects as go
-
+#check
 def get_stock_data(ticker_symbol, start_date, end_date):
     """
     Fetches historical stock data from Yahoo Finance for a given ticker.
