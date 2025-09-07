@@ -7,6 +7,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Any, Dict, Iterable, Mapping
 from dateutil.relativedelta import relativedelta
+from streamlit_extras.add_vertical_space import add_vertical_space
 
 # ── Third-party
 import pandas as pd
@@ -232,47 +233,55 @@ def render_treasury_curves() -> None:
 def render_oas_section() -> None:
     """OAS charts + right-hand KPI grid."""
     st.header("Key OAS Metrics")
-    col_chart, col_stats = st.columns([2, 1], gap="large")
 
-    with col_chart:
-        oas_tab1, oas_tab_bucket = st.tabs(["HY and IG OAS vs 10-yr Treasury", "OAS by Rating Bucket"])
+    
+    oas_tab1, oas_tab_bucket = st.tabs(["HY and IG OAS vs 10-yr Treasury", "OAS by Rating Bucket"])
 
-        with oas_tab1:
-            fig = go.Figure()
-            df_oas = of.fetch_index_oas_series("2024-01-01")
-            treas10 = of.fetch_treasury_series("2024-01-01")
+    with oas_tab1:
+        fig = go.Figure()
+        df_oas = of.fetch_index_oas_series("2024-01-01")
+        treas10 = of.fetch_treasury_series("2024-01-01")
 
-            fig.add_trace(go.Scatter(x=df_oas.index, y=df_oas["IG OAS"], name="IG OAS", line=dict(width=2)))
-            fig.add_trace(go.Scatter(x=df_oas.index, y=df_oas["HY OAS"], name="HY OAS", line=dict(width=2)))
-            fig.add_trace(go.Scatter(x=df_oas.index, y=df_oas["HY OAS"] - df_oas["IG OAS"],
-                                     name="HY–IG Basis", line=dict(width=2)))
-            fig.add_trace(go.Scatter(x=treas10.index, y=treas10, name="10-Yr Treasury (bp)", yaxis="y2", line=dict(width=2)))
+        fig.add_trace(go.Scatter(x=df_oas.index, y=df_oas["IG OAS"], name="IG OAS", line=dict(width=2)))
+        fig.add_trace(go.Scatter(x=df_oas.index, y=df_oas["HY OAS"], name="HY OAS", line=dict(width=2)))
+        fig.add_trace(go.Scatter(x=df_oas.index, y=df_oas["HY OAS"] - df_oas["IG OAS"],
+                                    name="HY–IG Basis", line=dict(width=2)))
+        fig.add_trace(go.Scatter(x=treas10.index, y=treas10, name="10-Yr Treasury (bp)", yaxis="y2", line=dict(width=2)))
 
-            fig.update_layout(
-                title=dict(text="IG vs HY OAS & 10-Yr Treasury", x=0.15, y=1, xanchor="center", yanchor="top"),
-                xaxis_title="Date",
-                yaxis_title="OAS (bp) / Basis (bp)",
-                legend=dict(x=-0.05, y=1.075, orientation="h"),
-                margin=dict(t=50, b=40),
-                yaxis2=dict(title="10-Yr Treasury (bp)", overlaying="y", side="right", showgrid=False),
-                template=FIG_TEMPLATE,
-            )
-            st.plotly_chart(fig, use_container_width=True, key="oas_vs_treasury")
+        fig.update_layout(
+            title=dict(text="IG vs HY OAS & 10-Yr Treasury", x=0.15, y=1, xanchor="center", yanchor="top"),
+            xaxis_title="Date",
+            yaxis_title="OAS (bp) / Basis (bp)",
+            legend=dict(x=-0.05, y=1.075, orientation="h"),
+            margin=dict(t=50, b=40),
+            yaxis2=dict(title="10-Yr Treasury (bp)", overlaying="y", side="right", showgrid=False),
+            template=FIG_TEMPLATE,
+        )
+        st.plotly_chart(fig, use_container_width=True, key="oas_vs_treasury")
 
-        with oas_tab_bucket:
-            st.header("OAS by Rating Bucket")
-            rb_df = of.fetch_oas_by_rating("2024-01-01")
-            fig_rb = go.Figure()
-            for col in rb_df.columns:
-                fig_rb.add_trace(go.Scatter(x=rb_df.index, y=rb_df[col], name=col, line=dict(width=2)))
-            fig_rb.update_layout(
-                title="Corporate OAS by Rating Bucket (bp)",
-                xaxis_title="Date",
-                yaxis_title="OAS (bp)",
-                margin=FIG_MARGIN,
-                template=FIG_TEMPLATE,
-            )
-            st.plotly_chart(fig_rb, use_container_width=True, key="oas_by_bucket")
+    with oas_tab_bucket:
+        st.header("OAS by Rating Bucket")
+        rb_df = of.fetch_oas_by_rating("2024-01-01")
+        fig_rb = go.Figure()
+        for col in rb_df.columns:
+            fig_rb.add_trace(go.Scatter(x=rb_df.index, y=rb_df[col], name=col, line=dict(width=2)))
+        fig_rb.update_layout(
+            title="Corporate OAS by Rating Bucket (bp)",
+            xaxis_title="Date",
+            yaxis_title="OAS (bp)",
+            margin=FIG_MARGIN,
+            template=FIG_TEMPLATE,
+        )
+        st.plotly_chart(fig_rb, use_container_width=True, key="oas_by_bucket")
+
+    add_vertical_space(5)
+
+    col_table, col_stats = st.columns([1, 2], gap="large")
+    with col_table:
+        # Latest Rating-Bucket Table
+        latest_rb = rb_df.tail(1).T.rename(columns={rb_df.index[-1]: "Latest"})
+        latest_rb["Δ (bp)"] = latest_rb["Latest"] - rb_df.tail(2).iloc[0]
+        st.table(latest_rb.style.format("{:.1f}"))
 
     with col_stats:
         # (kept calculations identical)
@@ -313,18 +322,9 @@ def render_oas_section() -> None:
         # Row 3
         c1, c2, c3 = st.columns(3, gap="small")
         with c1: st.metric("HY OAS–10Y T-Sy", f"{hy_net:.1f} bp", f"{(hy_net - hy_net_prev):+.1f} bp", delta_color="inverse")
-        with c2: st.metric("IG 1W Δ (bp)", f"{ig_wk:+.1f} bp")
-        with c3: st.metric("IG 1M Δ (bp)", f"{ig_mn:+.1f} bp")
-
-        # Row 4
-        c1, c2, _ = st.columns(3, gap="small")
-        with c1: st.metric("HY 1W Δ (bp)", f"{hy_wk:+.1f} bp")
-        with c2: st.metric("HY 1M Δ (bp)", f"{hy_mn:+.1f} bp")
-
-        # Latest Rating-Bucket Table
-        latest_rb = rb_df.tail(1).T.rename(columns={rb_df.index[-1]: "Latest"})
-        latest_rb["Δ (bp)"] = latest_rb["Latest"] - rb_df.tail(2).iloc[0]
-        st.table(latest_rb.style.format("{:.1f}"))
+        with c2: st.metric("IG 1M Δ (bp)", f"{ig_mn:+.1f} bp")
+        with c3: st.metric("HY 1M Δ (bp)", f"{hy_mn:+.1f} bp")
+    
 
 def render_vol_section() -> None:
     """MOVE index + metric."""
