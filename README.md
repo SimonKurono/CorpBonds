@@ -18,5 +18,5 @@ This Streamlit app provides:
 ## Credentials
 
 - Copy your `credentials.yaml` (with hashed passwords) into the root.
-- Create a `.env` file with `FRED_API_KEY=…`
+- Create a `.env` file with `FRED_API_KEY=…` and `NEWSAPI_KEY=...`
 
