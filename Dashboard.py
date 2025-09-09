@@ -16,12 +16,12 @@ import plotly.graph_objects as go
 import streamlit as st
 
 # ── Local
-import dashboard_helpers.news_fetcher as nf
-import dashboard_helpers.rate_fetcher as rf
-import dashboard_helpers.graph_fetcher as gf          # provides YIELD_SERIES_IDS, load_fred_data
-import dashboard_helpers.oas_fetcher as of
-import dashboard_helpers.yield_bucket_fetcher as ybf
-import dashboard_helpers.cds_move_fetcher as cmf
+import helpers.news_fetcher as nf
+import helpers.rate_fetcher as rf
+import helpers.graph_fetcher as gf          # provides YIELD_SERIES_IDS, load_fred_data
+import helpers.oas_fetcher as of
+import helpers.yield_bucket_fetcher as ybf
+import helpers.cds_move_fetcher as cmf
 
 
 # ╭─────────────────────────── Constants ───────────────────────────╮
