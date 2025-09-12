@@ -86,14 +86,14 @@ A **Streamlit-powered analytics dashboard** for monitoring **US corporate bond m
 
 ```bash
 # clone repository
-git clone https://github.com/SimonKurono/raffles-bond-db.git
-cd raffles-bond-db
+git clone https://github.com/SimonKurono/corpbonds-dashboard.git
+cd corpbonds-dashboard
 
 # install dependencies
 pip install -r requirements.txt
 
 # run locally
-streamlit run app.py
+streamlit run Dashboard.py
 ```
 
 -
