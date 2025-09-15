@@ -30,7 +30,7 @@ username        = st.session_state.get("username")
 # 3) Handle authentication
 if auth_status:
     authenticator.logout("Log out", "sidebar")
-    st.sidebar.success(f"Welcome back, {name}!")
+    st.toast(f"Welcome back, {name}!")
 elif auth_status is False:
     st.error("❌ Username/password is incorrect.")
 else:
