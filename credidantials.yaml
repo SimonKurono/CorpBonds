@@ -1,0 +1,22 @@
+# credentials.yaml  ── demo-only
+
+credentials:
+  usernames:
+    simon:
+      name: "Simon Kurono"
+      email: "simon@example.com"
+      password: "demo_pass_123"     # plain text; will be auto-hashed on first use
+    analyst:
+      name: "Raffles Analyst"
+      email: "analyst@example.com"
+      password: "letmein_456"       # plain text; will be auto-hashed on first use
+
+cookie:
+  name: "raffles_auth_cookie"
+  key: "CHANGE_ME_to_a_random_32+_char_secret"
+  expiry_days: 30
+
+# Optional: lets you pre-authorize emails if you add a registration flow later
+preauthorized:
+  emails:
+    - "simon@example.com"

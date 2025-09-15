@@ -3,20 +3,9 @@ import streamlit as st
 import utils.ui as ui
 from datetime import date
 
-
+# ---------- Page Config ----------
 st.set_page_config(page_title="Raffles Bond Platform", page_icon="🏦", layout="wide")
 ui.render_sidebar()
-
-
-# ---------- Helpers ----------
-def go(page_path: str):
-    try:
-        st.switch_page(page_path)
-    except Exception:
-        st.warning(f"Page not found: {page_path}")
-
-def is_signed_in() -> bool:
-    return bool(st.session_state.get("access_token"))
 
 # ---------- HERO ----------
 st.title("🏦 Raffles Bond Platform")
@@ -32,9 +21,9 @@ with c1:
     k3.metric("Sentiment (IG)", "+0.21")
 
     # Primary actions
-    if is_signed_in():
+    if ui.is_signed_in():
         st.button("→ Go to Dashboard", type="primary", use_container_width=True,
-                  on_click=lambda: go("pages/1_📊_Dashboard.py"))
+                  on_click=lambda: ui.go("pages/1_📊_Dashboard.py"))
     else:
         st.button("🔐 Sign in to get started", type="primary", use_container_width=True, disabled=True)
         st.caption("Sign-in enables your saved portfolios & preferences. (Wire this after /auth)")
@@ -62,20 +51,7 @@ features = [
     ("🔎 Search", "Find tickers/CUSIPs; add to portfolio or open in Quant.", "pages/6_🔎_Search.py"),
 ]
 
-for row in range(0, len(features), 3):
-    cols = st.columns(3)
-    for i, col in enumerate(cols):
-        idx = row + i
-        if idx >= len(features): break
-        title, desc, target = features[idx]
-        with col:
-            box = st.container(border=True, height="stretch", vertical_alignment="distribute")
-            with box:
-                st.markdown(f"### {title}")
-                st.caption(desc)
-                # A simple open button per card
-                st.button("Open", key=f"open_{idx}", use_container_width=True,
-                          on_click=lambda t=target: go(t))
+ui.feature_grid(features, columns=3)
 
 st.divider()
 

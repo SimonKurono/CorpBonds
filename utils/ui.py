@@ -3,6 +3,15 @@ from typing import List, Dict, Optional
 from datetime import datetime
 import streamlit as st
 
+def go(page_path: str):
+    try:
+        st.switch_page(page_path)
+    except Exception:
+        st.warning(f"Page not found: {page_path}")
+
+def is_signed_in() -> bool:
+    return bool(st.session_state.get("access_token"))
+
 def section(title: str, subtitle: Optional[str] = None, show_rule: bool = False) -> None:
     """Standard section heading."""
     st.subheader(title)
@@ -25,23 +34,31 @@ def kpi_group(kpis: List[Dict[str, str]], columns: int = 3) -> None:
         with cols[i % columns]:
             kpi_chip(kpi["label"], kpi["value"])
 
-def feature_grid(items: List[Dict[str, str]], columns: int = 3) -> None:
+def feature_grid(features: List[Dict[str, str]], columns: int = 3) -> None:
     """
     Render a responsive grid of features using native Streamlit columns.
     items: list of dicts like {"icon":"📊", "title":"Dashboard", "desc":"Curves & OAS"}
     """
-    for row_start in range(0, len(items), columns):
+    for row_start in range(0, len(features), columns):
         cols = st.columns(columns)
         for i, col in enumerate(cols):
             idx = row_start + i
-            if idx >= len(items): 
+            if idx >= len(features): 
                 break
             
-            it = items[idx]
+            it = features[idx]
+            title, desc, target = features[idx]
             with col:
-                with st.container(border=True, height="stretch"):
-                    st.markdown(f"### {it.get('icon','')} {it['title']}")
-                    st.caption(it["desc"])
+                box = st.container(border=True, height="stretch", vertical_alignment="distribute")
+                with box:
+                    st.markdown(f"### {title}")
+                    st.caption(desc)
+                    # A simple open button per card
+                    st.button("Open", key=f"open_{idx}", use_container_width=True,
+                            on_click=lambda t=target: go(t))
+
+
+        
 
 def divider() -> None:
     """Insert a horizontal rule."""
