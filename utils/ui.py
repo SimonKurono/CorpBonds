@@ -1,5 +1,6 @@
 # utils/ui.py
 from typing import List, Dict, Optional
+from datetime import datetime
 import streamlit as st
 
 def section(title: str, subtitle: Optional[str] = None, show_rule: bool = False) -> None:
@@ -50,7 +51,9 @@ def verticalSpace(height: int) -> None:
     """Insert vertical space."""
     st.write(f"<div style='height:{height}px'></div>", unsafe_allow_html=True)
 
-def set_page_config(title: str, layout: str) -> None:
-    """Set Streamlit page configuration."""
-    st.set_page_config(page_title=title, layout=layout)
+def render_sidebar() -> None:
+    st.sidebar.header("Settings")
+    st.sidebar.date_input("As of date", value=datetime.today(), key="as_of_date")
+    st.sidebar.markdown("---")
+    st.sidebar.write("Built by: Simon Kurono")
     

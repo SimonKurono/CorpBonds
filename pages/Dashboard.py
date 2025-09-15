@@ -22,6 +22,7 @@ import utils.fetchers.graph_fetcher as gf          # provides YIELD_SERIES_IDS, 
 import utils.fetchers.oas_fetcher as of
 import utils.fetchers.yield_bucket_fetcher as ybf
 import utils.fetchers.cds_move_fetcher as cmf
+import utils.ui as ui
 
 
 # ╭─────────────────────────── Constants ───────────────────────────╮
@@ -109,15 +110,12 @@ def get_move(start_date: str) -> pd.DataFrame:
 
 # ╭────────────────────────── Render sections ──────────────────────╮
 def render_header() -> None:
-    st.set_page_config(page_title="Raffles Bond DB", layout="wide")
+    st.set_page_config(page_title="Raffles Bond DB", page_icon="🏦", layout="wide")
     st.markdown("<style>.block-container{margin-left:auto;margin-right:auto;}</style>", unsafe_allow_html=True)
     st.title(APP_TITLE)
 
 def render_sidebar() -> None:
-    st.sidebar.header("Settings")
-    st.sidebar.date_input("As of date", value=datetime.today(), key="as_of_date")
-    st.sidebar.markdown("---")
-    st.sidebar.write("Built by: Simon Kurono")
+    ui.render_sidebar()
 
 def render_news_panel(headlines: list[Mapping[str, Any]]) -> None:
     """Top 5 headlines: 1 featured + 4 in grid."""

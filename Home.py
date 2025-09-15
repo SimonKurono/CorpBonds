@@ -1,8 +1,12 @@
 # streamlit_app/Home.py
 import streamlit as st
+import utils.ui as ui
 from datetime import date
 
+
 st.set_page_config(page_title="Raffles Bond Platform", page_icon="🏦", layout="wide")
+ui.render_sidebar()
+
 
 # ---------- Helpers ----------
 def go(page_path: str):

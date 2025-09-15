@@ -2,8 +2,13 @@ import streamlit as st
 import yaml
 import streamlit_authenticator as stauth
 
+import utils.ui as ui
+
 with open("credentials.yaml", encoding="utf-8") as f:
     config = yaml.safe_load(f)
+
+ui.render_sidebar()
+
 
 
 authenticator = stauth.Authenticate(
