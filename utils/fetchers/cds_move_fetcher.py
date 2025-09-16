@@ -15,8 +15,6 @@ if not FRED_API_KEY:
 fred = Fred(api_key=FRED_API_KEY)
 
 
-
-
 # ───────────────────  Fetch MOVE from Yahoo ───────────────────
 def fetch_move_yahoo_series(start_date: str) -> pd.DataFrame:
     """
@@ -46,7 +44,6 @@ def fetch_cds_proxy_series(start_date: str = "2005-01-01") -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    
 
     df_move = fetch_move_yahoo_series()
     print("MOVE tail (FRED):\n", df_move.tail(), "\n")

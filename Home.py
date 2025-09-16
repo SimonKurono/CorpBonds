@@ -8,6 +8,20 @@ st.set_page_config(page_title="Raffles Bond Platform", page_icon="🏦", layout=
 ui.render_sidebar()
 
 # ---------- HERO ----------
+
+ui.hero_split(
+    title="🏦 Raffles Bond Platform",
+    subtitle="Fixed-income intelligence, unified.",
+    img_path="assets/hero_banner_dark.png",      # put your banner here
+    kpis=(("IG OAS","114 bp"),("2s10s","-28 bp"),("Sentiment (IG)","+0.21")),
+    primary_label="→ Go to Dashboard",
+    primary_page="pages/1_📊_Dashboard.py",
+    secondary_label="Learn more",
+    secondary_page=None,  # you can wire later
+)
+st.divider()
+
+
 st.title("🏦 Raffles Bond Platform")
 st.caption("Fixed-income intelligence, unified.")
 

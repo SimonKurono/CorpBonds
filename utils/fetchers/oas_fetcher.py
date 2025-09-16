@@ -9,7 +9,6 @@ fred = Fred(api_key = os.getenv("FRED_API_KEY"))
 
 OAS_SERIES = {
     "IG OAS": "BAMLC0A0CM",
-    
     "HY OAS": "BAMLH0A0HYM2",
 }
 

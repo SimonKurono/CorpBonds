@@ -73,4 +73,50 @@ def render_sidebar() -> None:
     st.sidebar.date_input("As of date", value=datetime.today(), key="as_of_date")
     st.sidebar.markdown("---")
     st.sidebar.write("Built by: Simon Kurono")
+
+# add this helper
+import streamlit as st
+from typing import Optional, Tuple
+
+def hero_split(
+    title: str,
+    subtitle: str,
+    img_path: str,
+    *,
+    kpis: Optional[Tuple[Tuple[str,str], ...]] = None,
+    primary_label: str = "Get started",
+    primary_page: str = "",
+    secondary_label: Optional[str] = None,
+    secondary_page: Optional[str] = None,
+):
+    """
+    A simple two-column hero.
+    - kpis: e.g., (("IG OAS","114 bp"),("2s10s","-28 bp"),("Sentiment","0.21"))
+    - *_page: a `pages/...py` path for st.switch_page
+    """
+
+    c1, c2 = st.columns([2,1], vertical_alignment="center")
+    with c1:
+        st.title(title)
+        st.caption(subtitle)
+
+        if kpis:
+            cols = st.columns(len(kpis))
+            for (i,(label, value)) in enumerate(kpis):
+                cols[i].metric(label, value)
+
+        # CTAs
+        if primary_page:
+            st.button(primary_label, type="primary", use_container_width=False,
+                      on_click=lambda: go(primary_page))
+        else:
+            st.button(primary_label, type="primary", disabled=True)
+
+        if secondary_label:
+            st.button(secondary_label, use_container_width=False,
+                      on_click=(lambda: go(secondary_page)) if secondary_page else None)
+
+    with c2:
+        st.image(img_path, use_container_width=True)
+
     

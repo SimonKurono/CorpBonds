@@ -15,7 +15,7 @@ URL = "https://newsapi.org/v2/top-headlines"
 params = {
     "apiKey": API_KEY,
     "language": "en",
-    "pageSize": 5,           # top 5 headlines
+    "pageSize": 5,
     "sources": "bloomberg, the-wall-street-journal, the-economist, us, business"    
 }
 

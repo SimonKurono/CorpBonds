@@ -4,10 +4,11 @@
 from __future__ import annotations
 
 # ── Stdlib
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Any, Dict, Iterable, Mapping
 from dateutil.relativedelta import relativedelta
 from streamlit_extras.add_vertical_space import add_vertical_space
+from dateutil.parser import isoparse
 
 # ── Third-party
 import pandas as pd
@@ -127,7 +128,7 @@ def render_news_panel(headlines: list[Mapping[str, Any]]) -> None:
     feature, *others = headlines[:NEWS_MAX]
     if feature.get("urlToImage"):
         st.image(feature["urlToImage"], use_container_width=True)
-    f_pub = datetime.fromisoformat(feature["publishedAt"].replace("Z", "+00:00"))
+    f_pub = isoparse(feature["publishedAt"]).astimezone(timezone.utc)
     st.markdown(f"**{f_pub:%B %d %Y}** | *{feature['source']['name']}*")
     st.subheader(feature["title"])
     st.write(feature.get("description", ""))
@@ -139,7 +140,7 @@ def render_news_panel(headlines: list[Mapping[str, Any]]) -> None:
             with cell:
                 if art.get("urlToImage"):
                     st.image(art["urlToImage"], width=160)
-                a_pub = datetime.fromisoformat(art["publishedAt"].replace("Z", "+00:00"))
+                a_pub = isoparse(art["publishedAt"].replace("Z", "+00:00"))
                 st.markdown(
                     f"<small>{a_pub:%b %d} | {art['source']['name']}</small>",
                     unsafe_allow_html=True,
