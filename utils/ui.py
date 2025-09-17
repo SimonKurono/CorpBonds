@@ -1,7 +1,23 @@
 # utils/ui.py
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 from datetime import datetime
 import streamlit as st
+
+# ╭─────────────────────────── Full width container CSS ───────────────────────────╮
+st.markdown(
+    """
+    <style>
+    .full-height {
+        min-height: 100vh;
+
+        display: flex;
+        align-items: center;   /* vertical centering */
+        justify-content: center;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 def go(page_path: str):
     try:
@@ -58,8 +74,6 @@ def feature_grid(features: List[Dict[str, str]], columns: int = 3) -> None:
                             on_click=lambda t=target: go(t))
 
 
-        
-
 def divider() -> None:
     """Insert a horizontal rule."""
     st.divider()
@@ -74,9 +88,10 @@ def render_sidebar() -> None:
     st.sidebar.markdown("---")
     st.sidebar.write("Built by: Simon Kurono")
 
-# add this helper
-import streamlit as st
-from typing import Optional, Tuple
+
+
+
+
 
 def hero_split(
     title: str,
@@ -94,29 +109,32 @@ def hero_split(
     - kpis: e.g., (("IG OAS","114 bp"),("2s10s","-28 bp"),("Sentiment","0.21"))
     - *_page: a `pages/...py` path for st.switch_page
     """
+    with st.container():
+        st.markdown('<div class="full-height">', unsafe_allow_html=True)
+        
+        c1, c2 = st.columns([2,1], vertical_alignment="center")
+        with c1:
+            st.title(title)
+            st.caption(subtitle)
 
-    c1, c2 = st.columns([2,1], vertical_alignment="center")
-    with c1:
-        st.title(title)
-        st.caption(subtitle)
+            if kpis:
+                cols = st.columns(len(kpis))
+                for (i,(label, value)) in enumerate(kpis):
+                    cols[i].metric(label, value)
 
-        if kpis:
-            cols = st.columns(len(kpis))
-            for (i,(label, value)) in enumerate(kpis):
-                cols[i].metric(label, value)
+            # CTAs
+            if primary_page:
+                st.button(primary_label, type="primary", use_container_width=False,
+                        on_click=lambda: go(primary_page))
+            else:
+                st.button(primary_label, type="primary", disabled=True)
 
-        # CTAs
-        if primary_page:
-            st.button(primary_label, type="primary", use_container_width=False,
-                      on_click=lambda: go(primary_page))
-        else:
-            st.button(primary_label, type="primary", disabled=True)
+            if secondary_label:
+                st.button(secondary_label, use_container_width=False,
+                        on_click=(lambda: go(secondary_page)) if secondary_page else None)
 
-        if secondary_label:
-            st.button(secondary_label, use_container_width=False,
-                      on_click=(lambda: go(secondary_page)) if secondary_page else None)
+        with c2:
+            st.image(img_path, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    with c2:
-        st.image(img_path, use_container_width=True)
-
-    
+        
