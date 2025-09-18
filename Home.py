@@ -29,10 +29,7 @@ c1, c2 = st.columns([2, 1], vertical_alignment="center")
 
 with c1:
     # KPIs (placeholders for now)
-    k1, k2, k3 = st.columns(3)
-    k1.metric("IG OAS", "114 bp")
-    k2.metric("2s10s", "-28 bp")
-    k3.metric("Sentiment (IG)", "+0.21")
+    
 
     # Primary actions
     if ui.is_signed_in():
