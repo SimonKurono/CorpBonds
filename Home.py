@@ -15,7 +15,7 @@ ui.hero_split(
     img_path="assets/hero_banner_dark.png",      # put your banner here
     kpis=(("IG OAS","114 bp"),("2s10s","-28 bp"),("Sentiment (IG)","+0.21")),
     primary_label="→ Go to Dashboard",
-    primary_page="pages/1_📊_Dashboard.py",
+    primary_page="pages/Dashboard.py",
     secondary_label="Learn more",
     secondary_page=None,  # you can wire later
 )
@@ -28,16 +28,7 @@ st.caption("Fixed-income intelligence, unified.")
 c1, c2 = st.columns([2, 1], vertical_alignment="center")
 
 with c1:
-    # KPIs (placeholders for now)
-    
-
-    # Primary actions
-    if ui.is_signed_in():
-        st.button("→ Go to Dashboard", type="primary", use_container_width=True,
-                  on_click=lambda: ui.go("pages/1_📊_Dashboard.py"))
-    else:
-        st.button("🔐 Sign in to get started", type="primary", use_container_width=True, disabled=True)
-        st.caption("Sign-in enables your saved portfolios & preferences. (Wire this after /auth)")
+    st.caption()
 
 with c2:
     # Interactive teaser (mock yield for selected tenor)
