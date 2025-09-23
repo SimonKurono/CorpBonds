@@ -17,7 +17,7 @@ ui.hero_split(
     primary_label="→ Go to Dashboard",
     primary_page="pages/Dashboard.py",
     secondary_label="Learn more",
-    secondary_page=None,  # you can wire later
+    secondary_page=None,  #link another page
 )
 st.divider()
 
