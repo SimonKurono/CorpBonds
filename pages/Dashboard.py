@@ -191,8 +191,9 @@ def render_slope_and_yields() -> None:
             fig_ybf.add_trace(go.Scatter(x=yield_curve.index, y=yield_curve[col], name=col, line=dict(width=2)))
         fig_ybf.update_layout(title="ICE BofA US HY Index Effective Yield by Rating Bucket",
                               xaxis_title="Date", yaxis_title="Index Effective Yield (bp)", margin=FIG_MARGIN)
-        _apply_fig_defaults(fig_ybf)
+        _apply_fig_defaults(fig_ybf, title="HY Yield by Rating", x_title="Date", y_title="Yield (bp)")
         st.plotly_chart(fig_ybf, use_container_width=True, key="yield_curves_by_rating")
+        st.dataframe(yield_curve.tail())
 
     st.caption("All news fetched via NewsAPI.")
     st.caption("Finacial data is fetched via FredAPI from the Federal Reserve Bank of St.Louis (FRED).")
@@ -225,7 +226,7 @@ def render_treasury_curves() -> None:
             fig_c = px.line(df, x=df.index, y=df.columns,
                             title=f"Treasury Yields ({freq}) since {start}",
                             labels={"value": "Yield (%)", "index": "Date"})
-            _apply_fig_defaults(fig_c)
+            _apply_fig_defaults(fig_c, title="", x_title="Date", y_title="Yield (%)")
             st.plotly_chart(fig_c, use_container_width=True, key=f"curve_{start}_{freq}")
             st.dataframe(df.tail())
 
@@ -273,7 +274,7 @@ def render_oas_section() -> None:
         )
         st.plotly_chart(fig_rb, use_container_width=True, key="oas_by_bucket")
 
-    add_vertical_space(5)
+    add_vertical_space(2)
 
     col_table, col_stats = st.columns([1, 2], gap="large")
     with col_table:
@@ -338,7 +339,7 @@ def render_vol_section() -> None:
     fig_m = px.line(df_move, x=df_move.index, y=df_move.columns,
                     title="ICE BofAML MOVE Index (^MOVE)",
                     labels={"value": "Move (%)", "index": "Date"})
-    _apply_fig_defaults(fig_m)
+    _apply_fig_defaults(fig_m, title="", x_title="Date", y_title="Index Value")
     st.plotly_chart(fig_m, use_container_width=True, key="CBOE_MOVE")
     st.metric("Latest MOVE", f"{df_move['MOVE'].iloc[-1]:.1f}")
 # ╰─────────────────────────────────────────────────────────────────╯
