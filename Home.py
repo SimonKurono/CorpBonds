@@ -8,35 +8,37 @@ st.set_page_config(page_title="Raffles Bond Platform", page_icon="🏦", layout=
 ui.render_sidebar()
 
 # ---------- HERO ----------
+with st.container():
+    st.markdown('<div class="full-height">', unsafe_allow_html=True)
+    
+    c1, c2 = st.columns([2,1], vertical_alignment="center")
+    with c1:
+        st.title("🏦 Raffles Bond Platform")
+        st.caption("Fixed-income intelligence, unified.")
 
-ui.hero_split(
-    title="🏦 Raffles Bond Platform",
-    subtitle="Fixed-income intelligence, unified.",
-    img_path="assets/hero_banner_dark.png",      # put your banner here
-    kpis=(("IG OAS","114 bp"),("2s10s","-28 bp"),("Sentiment (IG)","+0.21")),
-    primary_label="→ Go to Dashboard",
-    primary_page="pages/Dashboard.py",
-    secondary_label="Learn more",
-    secondary_page=None,  #link another page
-)
-st.divider()
+        kpis=(("IG OAS","114 bp"),("2s10s","-28 bp"),("Sentiment (IG)","+0.21"))
+        cols = st.columns(3)
+        for (i,(label, value)) in enumerate(kpis):
+            cols[i].metric(label, value)
 
+        # CTAs
+        if "pages/Dashboard.py":
+            st.button("→ Go to Dashboard", type="primary", use_container_width=False,
+                    on_click=lambda: ui.go("pages/Dashboard.py"))
+        else:
+            st.button("→ Go to Dashboard", type="primary", disabled=True)
 
-st.title("🏦 Raffles Bond Platform")
-st.caption("Fixed-income intelligence, unified.")
+        if "Learn more":
+            st.button("Learn more", use_container_width=False,
+                    on_click=(lambda: ui.go("pages/Client_Login.py")) if "pages/Client_Login.py" else None)
 
-c1, c2 = st.columns([2, 1], vertical_alignment="center")
-
-with c1:
-    st.caption()
-
-with c2:
-    # Interactive teaser (mock yield for selected tenor)
-    st.write("**Yield curve teaser**")
-    tenor = st.slider("Tenor (months)", 1, 360, 120, label_visibility="collapsed")
-    # Simple mock curve
-    implied = round(0.8 + 1.2 * (1 - 2 ** (-tenor / 60.0)), 3)
-    st.metric("Implied Yield", f"{implied}%")
+        with c2:
+            # Interactive teaser (mock yield for selected tenor)
+            st.write("**Yield curve teaser**")
+            tenor = st.slider("Tenor (months)", 1, 360, 120, label_visibility="collapsed")
+            # Simple mock curve
+            implied = round(0.8 + 1.2 * (1 - 2 ** (-tenor / 60.0)), 3)
+            st.metric("Implied Yield", f"{implied}%")
 
 st.divider()
 
