@@ -2,6 +2,7 @@
 import streamlit as st
 import utils.ui as ui
 from datetime import date
+from datetime import datetime
 
 # ---------- Page Config ----------
 st.set_page_config(page_title="Raffles Bond Platform", page_icon="🏦", layout="wide")
@@ -69,11 +70,13 @@ st.write(
 
 # ---------- DATA FRESHNESS (placeholders; wire to /stats later) ----------
 st.subheader("Data Freshness")
+today = date.today()
+hour = datetime.now().strftime("%H:%M %p")
 f1, f2, f3 = st.columns(3)
-f1.info("Treasuries: EOD • 2025-09-12")
-f2.info("IG/HY OAS: EOD • 2025-09-12")
-f3.info("News/Sentiment: Hourly • 12:00 PT")
-st.caption("Wire these to your freshness table & cached endpoints once the API is live.")
+f1.info(f"Treasuries: EOD • {today}")
+f2.info(f"IG/HY OAS: EOD • {today}")
+f3.info(f"News/Sentiment: Hourly • {hour} PDT")
+st.caption("Data updated daily after market close (4pm ET) unless otherwise noted.")
 
 # ---------- FOOTER ----------
 st.write("---")
