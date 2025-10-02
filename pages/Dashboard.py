@@ -341,7 +341,9 @@ def render_vol_section() -> None:
                     labels={"value": "Move (%)", "index": "Date"})
     _apply_fig_defaults(fig_m, title="", x_title="Date", y_title="Index Value")
     st.plotly_chart(fig_m, use_container_width=True, key="CBOE_MOVE")
-    st.metric("Latest MOVE", f"{df_move['MOVE'].iloc[-1]:.1f}")
+    st.metric("Latest MOVE", f"{df_move['MOVE'].iloc[-1]:.1f} bp",f"{(df_move['MOVE'].iloc[-1] - df_move['MOVE'].iloc[-2]):+.1f} bp")
+
+
 # ╰─────────────────────────────────────────────────────────────────╯
 
 
