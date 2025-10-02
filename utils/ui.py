@@ -21,13 +21,28 @@ st.markdown(
 )
 
 def go(page_path: str):
+    """Navigate to a different page in a multipage app."""
     try:
         st.switch_page(page_path)
     except Exception:
         st.warning(f"Page not found: {page_path}")
 
 def is_signed_in() -> bool:
+    """Check if user is signed in (mock)."""
     return bool(st.session_state.get("access_token"))
+
+def switch_theme():
+    """ Toggle between light and dark themes."""
+    
+    if st.session_state.theme == "light":
+        st._config.set_option("theme.base", "dark")
+        st._config.set_option("theme.backgroundColor", "#0E1117")
+        st.session_state.theme = "dark"
+    else:
+        st._config.set_option("theme.base", "light")
+        st._config.set_option("theme.backgroundColor", "#FFFFFF")
+        st.session_state.theme = "light"
+    
 
 def section(title: str, subtitle: Optional[str] = None, show_rule: bool = False) -> None:
     """Standard section heading."""
@@ -88,6 +103,7 @@ def render_sidebar() -> None:
     st.sidebar.date_input("As of date", value=datetime.today(), key="as_of_date")
     st.sidebar.markdown("---")
     st.sidebar.write("Built by: Simon Kurono")
+    st.sidebar.button("Switch Theme", on_click=switch_theme())
 
 
 def hero_split(
