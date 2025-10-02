@@ -54,6 +54,10 @@ PERIODS: dict[str, dict[str, str]] = {
     "20Y":  {"start": (date.today() - relativedelta(years=20)).isoformat(), "freq": "W-Fri"},
     "MAX":  {"start": "1900-01-01", "freq": "W-Fri"},
 }
+
+#News Defaults
+pagesize = 5
+sources = {"bloomberg", "business-insider", "financial-post", "fortune", "the-wall-street-journal", "the-economist"}
 # ╰─────────────────────────────────────────────────────────────────╯
 
 
@@ -81,7 +85,7 @@ def _fmt_pct_unit(val: float | int | None) -> str:
 
 @st.cache_data(ttl=TTL_NEWS)
 def get_headlines() -> list[Mapping[str, Any]]:
-    return nf.fetch_headlines()
+    return nf.fetch_headlines(pagesize, sources)
 
 @st.cache_data(ttl=TTL_CORE_RATES)
 def get_core_rates() -> Mapping[str, tuple[float, float] | float]:
@@ -146,7 +150,7 @@ def render_news_panel(headlines: list[Mapping[str, Any]]) -> None:
                     unsafe_allow_html=True,
                 )
                 st.markdown(f"**{art['title']}**")
-                st.markdown(f"[Read more]({feature['url']})")  # kept as-is by request
+                st.markdown(f"[Read more]({feature['url']})") 
         st.markdown("<div style='height:30px;'></div>", unsafe_allow_html=True)
 
 def render_core_rates_panel(core_rates: Mapping[str, tuple[float, float] | float]) -> None:

@@ -20,7 +20,13 @@ params = {
 }
 
 @st.cache_data(ttl=60*30) 
-def fetch_headlines():
+def fetch_headlines(page_size: int, sources: dict, *args) -> list[dict]:
+    paarams = {
+        "apiKey": API_KEY,
+        "language": "en",
+        "pageSize": page_size,
+        "sources": ",".join(sources)
+    }
     resp = requests.get(URL, params=params)
     resp.raise_for_status()
     data = resp.json()
