@@ -57,7 +57,7 @@ PERIODS: dict[str, dict[str, str]] = {
 # ╰─────────────────────────────────────────────────────────────────╯
 
 
-# ╭──────────────────────── Helpers & caching ──────────────────────╮
+# ╭──────────────────────── Helpers and caching ──────────────────────╮
 def _apply_fig_defaults(fig: go.Figure, *, title: str | None = None,
                         x_title: str | None = None, y_title: str | None = None) -> go.Figure:
     """Apply shared Plotly layout defaults."""
@@ -96,7 +96,7 @@ def get_weekly_curve(ids: dict[str, str] | None = None) -> pd.DataFrame:
     """Weekly history since 2005 (W-FRI). If ids is None, pull all."""
     if ids is None:
         ids = gf.YIELD_SERIES_IDS
-    return gf.load_fred_data("2005-01-01", ids)  # default freq = W-FRI
+    return gf.load_fred_data("2005-01-01", ids)  
 
 @st.cache_data(ttl=TTL_CORE_RATES)
 def get_curve(start_date: str, ids: dict[str, str], freq: str) -> pd.DataFrame:
