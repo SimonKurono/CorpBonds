@@ -18,9 +18,9 @@ st.header("Search Parameters")
 category_col1, source_col2, col1, col2 = st.columns(4)
 
 with category_col1:
-    primary_keyword = st.multiselect("Select News Category", categories.keys(), default=["Business"])
+    primary_keyword = st.multiselect("Select News Category", categories.keys(), default=["Business"], width=200)
 with source_col2:
-    source = st.multiselect("Select News Source", sources.keys(), default=["Bloomberg"])
+    source = st.multiselect("Select News Source", sources.keys(), default=["Bloomberg"],width=200)
 with col1:
     start_date = st.date_input("Start Date", pd.to_datetime("2023-01-01"))
 with col2:
