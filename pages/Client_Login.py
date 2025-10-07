@@ -7,7 +7,16 @@ import utils.ui as ui
 with open("credentials.yaml", encoding="utf-8") as f:
     config = yaml.safe_load(f)
 
-ui.render_sidebar()
+def configure_page():
+    ui.configure_page(page_title="Raffles Bond Platform - Login", page_icon="🔐", layout="centered")
+
+def render_sidebar():
+    ui.render_sidebar()
+
+
+# ---------- Page Config ----------
+configure_page()
+render_sidebar()
 
 
 

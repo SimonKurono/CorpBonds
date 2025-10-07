@@ -6,9 +6,7 @@ from datetime import datetime
 
 # ---------- Page Config ----------
 def configure_page():
-    st.set_page_config(page_title="Raffles Bond Platform", page_icon="🏦", layout="wide")
-    if "theme" not in st.session_state:
-       st.session_state.theme = "light"
+    ui.configure_page(page_title="Raffles Bond Platform", page_icon="🏦", layout="wide")
     ui.render_sidebar()
 
 # ---------- HERO ----------

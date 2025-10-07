@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 
 import utils.ui as ui
 
+ui.configure_page(page_title="Financial Asset Search & Analysis", page_icon="📈", layout="wide")
 ui.render_sidebar()
 
 def get_stock_data(ticker_symbol, start_date, end_date):
@@ -62,10 +63,6 @@ def plot_normalized_data(data, benchmark_data, primary_ticker, benchmark_ticker)
     return fig
 
 #--------- PAGE DISPLAY ------------------------------
-st.set_page_config(layout="wide")
-st.title("Financial Asset Search & Analysis")
-
-# --- User Inputs in the Sidebar ---
 st.header("Search Parameters")
 ticker_col1, ticker_col2, col1, col2 = st.columns(4)
 

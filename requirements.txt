@@ -45,6 +45,7 @@ MarkupSafe==3.0.2
 matplotlib==3.9.4
 multitasking==0.0.12
 narwhals==2.3.0
+newsapi-python==0.2.7
 numpy==2.0.2
 packaging==25.0
 pandas==2.3.2

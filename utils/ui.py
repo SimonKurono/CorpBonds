@@ -19,6 +19,11 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+def configure_page(page_title: str, page_icon: str, layout: str) -> None:
+    st.set_page_config(page_title=page_title, page_icon=page_icon, layout=layout)
+    if "theme" not in st.session_state:
+       st.session_state.theme = "light"
+    
 
 def go(page_path: str):
     """Navigate to a different page in a multipage app."""

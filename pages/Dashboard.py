@@ -58,6 +58,7 @@ PERIODS: dict[str, dict[str, str]] = {
 #News Defaults
 pagesize = 5
 sources = {"bloomberg", "business-insider", "financial-post", "fortune", "the-wall-street-journal", "the-economist"}
+
 # ╰─────────────────────────────────────────────────────────────────╯
 
 
@@ -115,7 +116,7 @@ def get_move(start_date: str) -> pd.DataFrame:
 
 # ╭────────────────────────── Render sections ──────────────────────╮
 def render_header() -> None:
-    st.set_page_config(page_title="Raffles Bond DB", page_icon="🏦", layout="wide")
+    ui.configure_page(page_title="Raffles Bond DB", page_icon="🏦", layout="wide")
     st.markdown("<style>.block-container{margin-left:auto;margin-right:auto;}</style>", unsafe_allow_html=True)
     st.title(APP_TITLE)
 
