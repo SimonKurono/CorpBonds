@@ -23,6 +23,8 @@ def configure_page(page_title: str, page_icon: str, layout: str) -> None:
     st.set_page_config(page_title=page_title, page_icon=page_icon, layout=layout)
     if "theme" not in st.session_state:
        st.session_state.theme = "light"
+    else:
+         st._config.set_option("theme.base", st.session_state.theme)
     
 
 def go(page_path: str):
