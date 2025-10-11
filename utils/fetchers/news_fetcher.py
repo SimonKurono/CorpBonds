@@ -113,7 +113,7 @@ def fetch_all_news(query: str,
             language=language,
             sort_by=sort,
             page=page,
-            page_size=50,  
+            page_size=6,  
         )
     except NewsAPIException as e:
         raise RuntimeError(f"NewsAPI error (everything): {e}") from e
