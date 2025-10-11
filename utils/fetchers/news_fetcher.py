@@ -113,16 +113,14 @@ def fetch_all_news(query: str,
             language=language,
             sort_by=sort,
             page=page,
-            page_size=50,  # sane default; respects rate limits
+            page_size=50,  
         )
     except NewsAPIException as e:
-        # Surface a clear error; Streamlit will render nicely if you catch it at callsite
         raise RuntimeError(f"NewsAPI error (everything): {e}") from e
 
     return _normalize_articles(all_articles.get("articles", []))
 
 if __name__ == "__main__":
-    # Smoke test: should run with defaults and not error on types
     for art in fetch_headlines():
         src = (art.get("source") or {}).get("name", "")
         print(f"{art.get('publishedAt','')[:10]} | {src}\n  {art.get('title','')}\n")
