@@ -29,6 +29,24 @@ with col1:
 with col2:
     end_date = st.date_input("End Date", pd.to_datetime("today"))
 
+st.header("Filtered News Articles")
+news_df = utils.fetchers.news_fetcher.get_headlines(
+    categories=[categories[k] for k in primary_keyword],
+    sources=[sources[s] for s in source],
+    keywords=keyword,
+    from_date=start_date,
+    to_date=end_date,
+    page_size=100,
+)
+
+if not news_df.empty:
+    for idx, row in news_df.iterrows():
+        st.markdown(f"### [{row['title']}]({row['url']})")
+        st.markdown(f"*{row['source']}* | {row['publishedAt'].strftime('%Y-%m-%d %H:%M')}")
+        st.markdown(f"{row['description']}")
+        st.markdown("---")
+
+
 st.header("Today's Top Macroeconomic Headlines")
 
 
