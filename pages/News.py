@@ -87,40 +87,74 @@ def _source_name(a: dict) -> str:
     src = (a.get("source") or {}).get("name")
     return src or ""
 
+def render_featured_grid(articles: list[dict]):
+    """1 Main + 2 side articles."""
+    if not articles:
+        st.info("No articles found.")
+        return
+    main, side = articles[0], articles[1:3]  # safe even if less than 3 total
+
+    main_col, side_col = st.columns([2, 1])
+    with main_col:
+        if (main.get("urlToImage")):
+            st.image(main["urlToImage"], use_container_width=True)
+        title = main.get("title", "").strip() or "Untitled"
+        src = _source_name(main)
+        meta = f"{main.get('publishedAt','')[:10]}  ·  {src}" if src else main.get('publishedAt','')[:10]
+        st.markdown(f"### {title}")
+        if meta:
+            st.caption(meta)
+        if main.get("description"):
+            st.write(main["description"])   
+        st.markdown(f"[Read more]({main.get('url')})")
+    with side_col:
+        for art in side:
+            if(art.get("urlToImage")):
+                st.image(art["urlToImage"], use_container_width=True)
+            title = art.get("title", "").strip() or "Untitled"
+            src = _source_name(art)
+            meta = f"{art.get('publishedAt','')[:10]}  ·  {src}" if src else art.get('publishedAt','')[:10]
+            st.markdown(f"**{title}**")
+            if meta:
+                st.caption(meta)
+            if art.get("description"):
+                st.write(art["description"])
+            st.markdown(f"[Read more]({art.get('url')})")
+            
+            
+
 def render_article_card(a: dict):
     """Simple, resilient card layout for one article."""
     if a.get("urlToImage"):
         with st.container(height="stretch"):
-            col1, col2 = st.columns([1.15, 3.5])
-            # Image (if any)
-            with col1:
+            st.image(a["urlToImage"], use_container_width=True)
                 
-                st.image(a["urlToImage"], use_container_width=True)
-                
-            # Text
-            with col2:
-                title = a.get("title", "").strip() or "Untitled"
-                src = _source_name(a)
-                meta = f"{a.get('publishedAt','')[:10]}  ·  {src}" if src else a.get('publishedAt','')[:10]
-                st.markdown(f"**{title}**")
-                if meta:
-                    st.caption(meta)
-                if a.get("description"):
-                    st.write(a["description"])
-                #st.markdown(f"[Read more]({a.get['url']})")
+            title = a.get("title", "").strip() or "Untitled"
+            src = _source_name(a)
+            meta = f"{a.get('publishedAt','')[:10]}  ·  {src}" if src else a.get('publishedAt','')[:10]
+            st.markdown(f"**{title}**")
+            if meta:
+                st.caption(meta)
+            if a.get("description"):
+                st.write(a["description"])
+            st.markdown(f"[Read more]({a.get('url')})")
 
 def render_section(title: str, articles: list[dict]):
     st.subheader(title)
     if not articles:
         st.info("No articles found.")
         return
-    # 2-column masonry feel
-    left, right = st.columns(2)
+    # 3-column masonry feel
+    
+    c1, c2, c3 = st.columns(3)
     for i, art in enumerate(articles):
-        (left if i % 2 == 0 else right).markdown("")  # spacing
-        with (left if i % 2 == 0 else right):
-            render_article_card(art)
-            st.divider()
+            with (c1 if i % 3 == 0 else c2 if i % 3 == 1 else c3):
+                render_article_card(art)
+    
+    
+
+    st.markdown("---")
+
 
 def _labels_to_slug_dict(selected: list[str], mapping: dict[str, str]) -> dict[str, str]:
     """Return {label: slug} for just the selected labels."""
@@ -178,8 +212,7 @@ def load_default_dashboard():
 
     if top:
         st.subheader("Top Headlines")
-        for art in top:
-            render_article_card(art)
+        render_featured_grid(top)
         st.divider()
 
     # 2) Themed sections (Everything endpoint)
@@ -198,6 +231,7 @@ def load_default_dashboard():
                 language="en",
                 sort="relevancy",
                 page=1,
+                page_num=3,
             )
         except Exception as e:
             arts = []

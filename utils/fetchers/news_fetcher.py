@@ -98,7 +98,8 @@ def fetch_all_news(query: str,
                    to_date: str,
                    language: str = "en",
                    sort: str = "relevancy",
-                   page: int = 2) -> List[Dict[str, Any]]:
+                   page: int = 2,
+                   page_num: int = 5) -> List[Dict[str, Any]]:
     """
     Keeps your signature. Accepts dicts (labels→slugs) or iterables of slugs.
     Returns normalized article dicts.
@@ -113,7 +114,7 @@ def fetch_all_news(query: str,
             language=language,
             sort_by=sort,
             page=page,
-            page_size=6,  
+            page_size=page_num,  
         )
     except NewsAPIException as e:
         raise RuntimeError(f"NewsAPI error (everything): {e}") from e
