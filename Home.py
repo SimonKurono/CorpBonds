@@ -87,7 +87,7 @@ def render_footer():
     st.write("---")
     st.caption(f"© Raffles Advisors • For research and education • As-of: {date.today().isoformat()}")
 
-def main():
+def main() -> None:
     configure_page()
     
     render_hero()
