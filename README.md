@@ -33,6 +33,14 @@ A **Streamlit-powered analytics dashboard** for monitoring **US corporate bond m
   * **CBOE MOVE Index** time series.
   * Latest MOVE metrics.
 
+* **News**
+
+  * View top headlines across 5 sectors
+  * Search for news based on criteria and source
+ 
+
+ 
+
 ### 🛠️ In Progress
 
 * **Equity Search & Integration**
