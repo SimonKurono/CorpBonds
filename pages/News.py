@@ -6,10 +6,12 @@ import streamlit as st
 import utils.ui as ui
 from utils.fetchers import news_fetcher as nf  # <- use your helper
 
+
 # --- Page & Sidebar ---
-ui.render_sidebar()
-st.set_page_config(layout="wide")
-st.title("News Search & Analysis")
+def configure_page():
+    ui.render_sidebar()
+    st.set_page_config(layout="wide")
+    st.title("News Search & Analysis")
 
 # --- Constants / Mappings (labels → slugs) ---
 CATEGORIES = {
@@ -189,7 +191,8 @@ def perform_search():
             to_date=to_date,
             language="en",
             sort="relevancy",
-            page=1,  # first page
+            page=1,
+            page_num=10,
         )
     except Exception as e:
         st.error(f"Search error: {e}")
@@ -245,3 +248,11 @@ if run_search:
     render_section("Search Results", results)
 else:
     load_default_dashboard()
+
+
+def main():
+    configure_page()
+    load_default_dashboard()
+
+if __name__ == "main":
+    main()
