@@ -53,13 +53,19 @@ def perf_stats(returns: pd.Series) -> Dict[str, float]:
 # ------------------------------------------------------------
 # Sidebar – global controls
 # ------------------------------------------------------------
-st.sidebar.header("Settings")
-seed = st.sidebar.number_input("Random seed (for demo)", min_value=1, max_value=1_000_000, value=42, step=1)
-n_days = st.sidebar.slider("Sample length (business days)", 250, 1250, 750, step=50)
-default_bench = st.sidebar.selectbox("Benchmark (for context)", ["SPY", "LQD", "HYG", "Custom"], index=1)
+st.header("Settings")
+c1, c2, c3 = st.columns([0.75,0.75,1.5])
+with c1:
+    seed = st.number_input("Random seed (for demo)", min_value=1, max_value=1_000_000, value=42, step=1)
 
-st.sidebar.markdown("---")
-st.sidebar.caption("💡 TODO: Replace synthetic generators with your API/DB fetches, e.g. GET /prices?ids=...")
+with c2:
+    default_bench = st.selectbox("Benchmark (for context)", ["SPY", "LQD", "HYG", "Custom"], index=1)
+
+with c3:
+    n_days = st.slider("Sample length (business days)", 250, 1250, 750, step=50)
+
+st.write("")
+st.caption("💡 TODO: Replace synthetic generators with your API/DB fetches, e.g. GET /prices?ids=...")
 
 # ------------------------------------------------------------
 # Tabs
@@ -199,7 +205,9 @@ with tab_strat:
     s4.metric("Max DD", f"{stats['MaxDD']*100:.2f}%")
 
     with st.expander("Trading assumptions"):
-        st.write("• No costs/slippage. • Daily rebalancing. • Signals applied next bar (1-day lag).")
+        st.write("• No costs/slippage.")
+        st.write("• Daily rebalancing.")
+        st.write("• Signals applied next bar (1-day lag).")
         st.caption("TODO: add costs, borrow, position caps, risk budgets.")
 
 # ============================================================
