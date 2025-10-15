@@ -19,7 +19,7 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
-def configure_page(page_title: str, page_icon: str, layout: str) -> None:
+def configure_page(page_title: str, page_icon, layout="wide") -> None:
     st.set_page_config(page_title=page_title, page_icon=page_icon, layout=layout)
     if "theme" not in st.session_state:
        st.session_state.theme = "light"
