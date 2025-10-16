@@ -8,10 +8,10 @@ from utils.fetchers import news_fetcher as nf  # <- use your helper
 
 
 # --- Page & Sidebar ---
-def configure_page():
-    ui.render_sidebar()
-    st.set_page_config(layout="wide")
-    st.title("News Search & Analysis")
+
+ui.render_sidebar()
+st.set_page_config(layout="wide")
+st.title("News Search & Analysis")
 
 # --- Constants / Mappings (labels → slugs) ---
 CATEGORIES = {
@@ -251,7 +251,7 @@ else:
 
 
 def main():
-    configure_page()
+    #configure_page()
     load_default_dashboard()
 
 if __name__ == "main":
