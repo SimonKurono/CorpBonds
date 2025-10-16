@@ -51,12 +51,12 @@ def render_feature_grid():
     st.caption("Everything you need for credit & cross-asset workflows.")
 
     features = [
-        ("📊 Market Dashboard", "Curves, OAS & sector heatmaps at a glance.", "pages/1_📊_Dashboard.py"),
-        ("🧮 Quant / RV", "z-scores, beta/alpha, tracking error, correlations.", "pages/2_🧮_Quant.py"),
-        ("💼 Portfolio + Benchmarks", "TWR returns, drawdowns; SPY/LQD/HYG one-click.", "pages/3_💼_Portfolio.py"),
-        ("📰 News", "Curated feed with issuer/sector filters + AI summaries.", "pages/4_📰_News.py"),
-        ("📈 Stats", "Treasuries, OAS/CDS, curve spreads — CSV downloads.", "pages/5_📈_Stats.py"),
-        ("🔎 Search", "Find tickers/CUSIPs; add to portfolio or open in Quant.", "pages/6_🔎_Search.py"),
+        ("📊 Market Dashboard", "Curves, OAS & sector heatmaps at a glance.", "pages/Dashboard.py"),
+        ("🧮 Quant / RV", "z-scores, beta/alpha, tracking error, correlations.", "pages/Quant_Playground.py"),
+        ("💼 Portfolio + Benchmarks", "TWR returns, drawdowns; SPY/LQD/HYG one-click.", "pages/Portfolio.py"),
+        ("📰 News", "Curated feed with issuer/sector filters + AI summaries.", "pages/News.py"),
+        ("📈 Stats", "Treasuries, OAS/CDS, curve spreads — CSV downloads.", "pages/Relative_Value_Screener.py"),
+        ("🔎 Search", "Find tickers/CUSIPs; add to portfolio or open in Quant.", "pages/Stock_Search.py"),
     ]
 
     ui.feature_grid(features, columns=3)
