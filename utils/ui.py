@@ -112,7 +112,6 @@ def render_sidebar() -> None:
     st.sidebar.write("Built by: Simon Kurono")
     st.sidebar.button("Switch Theme", on_click=switch_theme())
 
-
 def hero_split(
     title: str,
     subtitle: str,
@@ -156,8 +155,3 @@ def hero_split(
         with c2:
             st.image(img_path, use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
-
-
-
-
-        
