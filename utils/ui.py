@@ -3,7 +3,6 @@ from typing import List, Dict, Optional, Tuple
 from datetime import datetime
 import streamlit as st
 
-
 # ╭─────────────────────────── Full width container CSS ───────────────────────────╮
 st.markdown(
     """
@@ -25,7 +24,6 @@ def configure_page(page_title: str, page_icon, layout="wide") -> None:
        st.session_state.theme = "light"
     else:
          st._config.set_option("theme.base", st.session_state.theme)
-    
 
 def go(page_path: str):
     """Navigate to a different page in a multipage app."""
@@ -50,7 +48,6 @@ def switch_theme():
         st._config.set_option("theme.backgroundColor", "#FFFFFF")
         st.session_state.theme = "light"
     
-
 def section(title: str, subtitle: Optional[str] = None, show_rule: bool = False) -> None:
     """Standard section heading."""
     st.subheader(title)
