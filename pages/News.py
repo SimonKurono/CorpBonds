@@ -7,7 +7,6 @@ import utils.ui as ui
 from utils.fetchers import news_fetcher as nf  # <- use your helper
 
 
-# --- Page & Sidebar ---
 
 ui.render_sidebar()
 st.set_page_config(layout="wide")

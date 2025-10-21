@@ -55,7 +55,7 @@ def plot_normalized_data(data, benchmark_data, primary_ticker, benchmark_ticker)
 
     # Customize layout for the normalized chart
     fig.update_layout(
-        title=f'Performance: {primary_ticker} vs. {benchmark_ticker}' if benchmark_ticker else f'{primary_ticker} Performance',
+        title=f'Performance Chart: {primary_ticker} vs. {benchmark_ticker}' if benchmark_ticker else f'{primary_ticker} Performance',
         xaxis_title='Date',
         yaxis_title='Normalized Price (Start = 100)',
         legend_title='Ticker',
@@ -88,39 +88,24 @@ def display_page():
             
             st.header(f"{ticker_info.info.get('longName', primary_ticker)} ({primary_ticker})")
             
-            
-            
-            
-            # --- Display Company Info and Price Chart in columns ---
-            info_col, chart_col = st.columns([1, 2]) # Give more space to the chart
-
-            with info_col:
-                st.subheader("Company Profile")
-                st.markdown(f"**Sector:** {ticker_info.info.get('sector', 'N/A')}")
-                st.markdown(f"**Industry:** {ticker_info.info.get('industry', 'N/A')}")
-                #st.markdown(f"**Website:** [{ticker_info.info.get('website', 'N/A')}]({ticker_info.info.get('website', 'N/A')})")
-                with st.expander("Business Summary"):
-                    st.write(ticker_info.info.get('longBusinessSummary', 'No description available.'))
+            sector, industry = st.columns([1,1])
+            with sector:
+                st.info(f"**Sector:** {ticker_info.info.get('sector', 'N/A')}")
+            with industry:
+                st.info(f"**Industry:** {ticker_info.info.get('industry', 'N/A')}")
+            #st.markdown(f"**Website:** [{ticker_info.info.get('website', 'N/A')}]({ticker_info.info.get('website', 'N/A')})")
+            with st.expander("Business Summary"):
+                st.write(ticker_info.info.get('longBusinessSummary', 'No description available.'))
                 
-                st.markdown("**Run Analysis**")
-                monte_carlo, moving_average, relative_value = st.columns(3)
-                with monte_carlo:
-                    st.button(label="Monte Carlo", type="primary", use_container_width=True)
-                with moving_average:
-                    st.button(label="Moving Average",type="primary",use_container_width=True)
-                with relative_value:
-                    st.button(label="Relative Value", type="primary", use_container_width=True)
-
-            with chart_col:
-                st.subheader("Performance Chart")
-                benchmark_data = None
-                if benchmark_ticker:
-                    benchmark_data = get_stock_data(benchmark_ticker, start_date, end_date)
-                
-                # Use the new normalized plotting function
-                if stock_data is not None and not stock_data.empty:
-                    fig = plot_normalized_data(stock_data, benchmark_data, primary_ticker, benchmark_ticker)
-                    st.plotly_chart(fig, use_container_width=True)
+   
+            benchmark_data = None
+            if benchmark_ticker:
+                benchmark_data = get_stock_data(benchmark_ticker, start_date, end_date)
+            
+            # Use the new normalized plotting function
+            if stock_data is not None and not stock_data.empty:
+                fig = plot_normalized_data(stock_data, benchmark_data, primary_ticker, benchmark_ticker)
+                st.plotly_chart(fig, use_container_width=True)
 
             # --- Display Raw Data Snapshot ---
             st.subheader("Raw Data Snapshot")

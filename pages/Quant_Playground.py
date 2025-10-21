@@ -12,8 +12,7 @@ import utils.ui as ui
 # Page config
 # ------------------------------------------------------------
 def configure_page():
-    st.set_page_config(page_title="Quant Playground", page_icon="🧮", layout="wide")
-    st.title("🧮 Quant Analysis Playground")
+    ui.configure_page(page_title="Quant Playground", page_icon="🧮", layout="wide")
     st.caption("Monte Carlo, moving averages, relative value, and simple strategy prototyping.")
     ui.render_sidebar()
 
