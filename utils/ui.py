@@ -40,7 +40,7 @@ def feature_grid(features: List[Tuple[str, str, str]], columns: int = 3) -> None
             if idx >= len(features): break
             title, desc, target = features[idx]
             with col:
-                box = st.container(border=True)
+                box = st.container(border=True, height="stretch", vertical_alignment="distribute")
                 with box:
                     st.markdown(f"### {title}")
                     st.caption(desc)
