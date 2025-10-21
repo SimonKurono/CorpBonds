@@ -6,6 +6,7 @@ import streamlit as st
 def configure_page(page_title: str, page_icon, layout="wide") -> None:
     """Configure Streamlit page (theme now comes from config.toml)."""
     st.set_page_config(page_title=page_title, page_icon=page_icon, layout=layout)
+    st.title(f"{page_icon} {page_title}")
 
 def go(page_path: str):
     try:
