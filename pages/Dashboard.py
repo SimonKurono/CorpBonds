@@ -27,7 +27,6 @@ import utils.ui as ui
 
 
 # ╭─────────────────────────── Constants ───────────────────────────╮
-APP_TITLE = "🏦 Raffles Advisors – US Corporate-Bond Dashboard"
 NEWS_MAX = 5
 KPI_PER_ROW = 3
 
@@ -116,9 +115,9 @@ def get_move(start_date: str) -> pd.DataFrame:
 
 # ╭────────────────────────── Render sections ──────────────────────╮
 def render_header() -> None:
-    ui.configure_page(page_title="Raffles Bond DB", page_icon="🏦", layout="wide")
+    ui.configure_page(page_title="Raffles Advisors – US Corporate-Bond Dashboard", page_icon="🏦", layout="wide")
     st.markdown("<style>.block-container{margin-left:auto;margin-right:auto;}</style>", unsafe_allow_html=True)
-    st.title(APP_TITLE)
+    
 
 def render_sidebar() -> None:
     ui.render_sidebar()
