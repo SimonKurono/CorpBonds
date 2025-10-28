@@ -2,7 +2,6 @@
 
 A **Streamlit-powered analytics dashboard** for monitoring **US corporate bond markets**, **Treasury yield curves**, and related fixed-income indicators.
 
----
 
 ## 🚀 Features
 
@@ -50,7 +49,7 @@ A **Streamlit-powered analytics dashboard** for monitoring **US corporate bond m
 
   * Authentication and client-specific dashboards for private access.
 
----
+
 
 ## 📊 Data Sources
 
@@ -58,7 +57,7 @@ A **Streamlit-powered analytics dashboard** for monitoring **US corporate bond m
 * **NewsAPI** – Top financial headlines.
 * **Yahoo Finance** – MOVE index & CDS spreads.
 
----
+
 
 ## 🖥️ Tech Stack
 
@@ -74,7 +73,7 @@ A **Streamlit-powered analytics dashboard** for monitoring **US corporate bond m
   * `yield_bucket_fetcher` – HY yields by rating
   * `cds_move_fetcher` – MOVE index
 
----
+
 
 ## ⚡ Project Status
 
@@ -88,7 +87,7 @@ A **Streamlit-powered analytics dashboard** for monitoring **US corporate bond m
   * 🗂️ Package helper modules for reusability.
   * ☁️ Deploy on Streamlit Cloud / custom VPS.
 
----
+
 
 ## 📦 Installation
 
