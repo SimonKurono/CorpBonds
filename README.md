@@ -95,13 +95,13 @@ A **Streamlit-powered analytics dashboard** for monitoring **US corporate bond m
 ```bash
 # clone repository
 git clone https://github.com/SimonKurono/corpbonds-dashboard.git
-cd corpbonds-dashboard
+cd corpbonds
 
 # install dependencies
 pip install -r requirements.txt
 
 # run locally
-streamlit run Dashboard.py
+streamlit run Home.py
 ```
 
 
