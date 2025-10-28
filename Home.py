@@ -12,8 +12,6 @@ def main() -> None:
 
     # ---------- HERO ----------
     with st.container():
-        # If you want full-height, make sure you also have CSS for .full-height defined in a helper.
-        # To avoid HTML issues for now, we'll skip the custom <div> wrapper.
         c1, c2 = st.columns([2, 1], vertical_alignment="center")
 
         with c1:
