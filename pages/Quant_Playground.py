@@ -165,7 +165,7 @@ def vis_page():
             s4.metric("Max DD", f"{stats['MaxDD']*100:.2f}%")
 
     # ============================================================
-    # 🧪 Strategy Lab (simple prototypes)
+    # Strategy Lab (simple prototypes)
     # ============================================================
     with tab_strat:
         st.subheader("Strategy Lab (Crossover / Mean Reversion)")
