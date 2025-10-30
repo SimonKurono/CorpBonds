@@ -80,7 +80,7 @@ def vis_page():
     )
 
     # ============================================================
-    # 🎲 Monte Carlo Simulation
+    # Monte Carlo Simulation
     # ============================================================
     with tab_mc:
         st.subheader("Monte Carlo (GBM)")
