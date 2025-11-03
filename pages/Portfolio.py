@@ -204,19 +204,140 @@ def render_header():
     ui.render_sidebar()
 
 
+def render_stock_chart(ticker: str):
+    """Render a stock price chart for the given ticker."""
+    if not ticker:
+        st.info("Enter or select a ticker to view chart")
+        return
+    
+    try:
+        # Get historical data (last 6 months)
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=180)
+        
+        stock_data = yf.download(ticker, start=start_date, end=end_date, progress=False)
+        
+        if stock_data.empty:
+            st.warning(f"No data available for {ticker}")
+            return
+        
+        # Handle MultiIndex columns from yfinance
+        # yfinance returns DataFrame with MultiIndex columns like ('Close', 'TICKER')
+        if isinstance(stock_data.columns, pd.MultiIndex):
+            # Flatten MultiIndex by selecting 'Close' level
+            try:
+                # Method 1: Use xs to cross-section
+                close_prices = stock_data.xs('Close', axis=1, level=0)
+                # If multiple columns, take first
+                if isinstance(close_prices, pd.DataFrame):
+                    close_prices = close_prices.iloc[:, 0]
+            except:
+                # Method 2: Direct column access
+                try:
+                    close_prices = stock_data[('Close', ticker)]
+                except:
+                    # Method 3: Get first Close column
+                    close_cols = [col for col in stock_data.columns if col[0] == 'Close']
+                    if close_cols:
+                        close_prices = stock_data[close_cols[0]]
+                    else:
+                        close_prices = stock_data.iloc[:, 0]
+        else:
+            # Single ticker case - just get Close column
+            if 'Close' in stock_data.columns:
+                close_prices = stock_data['Close']
+            else:
+                close_prices = stock_data.iloc[:, 0]
+        
+        # Ensure we have a Series (not DataFrame)
+        if isinstance(close_prices, pd.DataFrame):
+            close_prices = close_prices.iloc[:, 0]
+        
+        # Convert to Series if needed
+        if not isinstance(close_prices, pd.Series):
+            close_prices = pd.Series(close_prices.values, index=close_prices.index)
+        
+        # Remove timezone info if present
+        if hasattr(close_prices.index, 'tz') and close_prices.index.tz is not None:
+            close_prices.index = close_prices.index.tz_localize(None)
+        
+        # Ensure data is sorted by date and remove any NaN values
+        close_prices = close_prices.sort_index().dropna()
+        
+        # Debug: Check if we have data
+        if len(close_prices) == 0:
+            st.warning(f"No price data available for {ticker}")
+            return
+        
+        # Get current price info
+        stock = yf.Ticker(ticker)
+        info = stock.info
+        current_price = info.get('currentPrice', close_prices.iloc[-1] if not close_prices.empty else 0)
+        company_name = info.get('longName', ticker)
+        
+        # Create chart
+        fig = go.Figure()
+        
+        # Ensure we have valid numeric data
+        close_prices = close_prices.astype(float)
+        
+        # Add price line
+        fig.add_trace(go.Scatter(
+            x=pd.to_datetime(close_prices.index),
+            y=close_prices.values,
+            mode='lines',
+            name=ticker,
+            line=dict(width=2, color='#1f77b4'),
+            hovertemplate='<b>%{fullData.name}</b><br>Date: %{x}<br>Price: $%{y:.2f}<extra></extra>'
+        ))
+        
+        # Add current price marker
+        if current_price > 0 and not close_prices.empty:
+            last_date = pd.to_datetime(close_prices.index[-1])
+            fig.add_trace(go.Scatter(
+                x=[last_date],
+                y=[float(current_price)],
+                mode='markers',
+                name='Current Price',
+                marker=dict(size=12, color='red', symbol='circle', line=dict(width=2, color='white')),
+                hovertemplate='<b>Current Price</b><br>Date: %{x}<br>Price: $%{y:.2f}<extra></extra>'
+            ))
+        
+        fig.update_layout(
+            title=f"{company_name} ({ticker})",
+            xaxis_title="Date",
+            yaxis_title="Price ($)",
+            template=FIG_TEMPLATE,
+            margin=FIG_MARGIN,
+            height=400,
+            showlegend=True,
+            hovermode='x unified'
+        )
+        
+        st.plotly_chart(fig, use_container_width=True)
+        
+        # Display current price info
+        if current_price > 0:
+            st.metric("Current Price", f"${current_price:.2f}")
+        
+    except Exception as e:
+        st.error(f"Error loading chart for {ticker}: {e}")
+        st.exception(e)
+
+
 def render_trade_panel():
     """Render buy/sell trading panel."""
     st.header("💰 Trade")
     st.caption("Buy or sell stocks to manage your portfolio")
     
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns(2, gap="large")
     
     with col1:
         st.subheader("Buy Stock")
         buy_ticker = st.text_input("Ticker Symbol", "", key="buy_ticker").upper()
         buy_quantity = st.number_input("Quantity", min_value=1, value=1, key="buy_quantity")
         
-        if st.button("🛒 Buy", type="primary", use_container_width=True):
+        if st.button("Buy", type="secondary", use_container_width=True):
             if buy_ticker:
                 try:
                     stock = yf.Ticker(buy_ticker)
@@ -232,8 +353,7 @@ def render_trade_panel():
                     st.error(f"Error fetching data for {buy_ticker}: {e}")
             else:
                 st.warning("Please enter a ticker symbol.")
-    
-    with col2:
+        
         st.subheader("Sell Stock")
         holdings_df = get_current_holdings()
         
@@ -247,7 +367,7 @@ def render_trade_panel():
                 max_quantity = int(holdings_df[holdings_df["Ticker"] == sell_ticker]["Quantity"].iloc[0])
                 sell_quantity = st.number_input("Quantity", min_value=1, max_value=max_quantity, value=1, key="sell_quantity")
                 
-                if st.button("💸 Sell", type="primary", use_container_width=True):
+                if st.button("Sell", type="primary", use_container_width=True):
                     try:
                         stock = yf.Ticker(sell_ticker)
                         info = stock.info
@@ -263,6 +383,22 @@ def render_trade_panel():
                             st.error("Could not fetch current price for this ticker.")
                     except Exception as e:
                         st.error(f"Error fetching data for {sell_ticker}: {e}")
+    
+    with col2:
+        st.subheader("📈 Stock Chart")
+        
+        # Determine which ticker to display (prioritize buy ticker if entered)
+        display_ticker = None
+        
+        # Check if user is entering a buy ticker (access from session state)
+        if 'buy_ticker' in st.session_state and st.session_state.get('buy_ticker'):
+            display_ticker = st.session_state.get('buy_ticker').upper()
+        # Otherwise check if user selected a sell ticker
+        elif 'sell_ticker' in st.session_state and st.session_state.get('sell_ticker'):
+            display_ticker = st.session_state.get('sell_ticker')
+        
+        # Render chart for the active ticker
+        render_stock_chart(display_ticker)    
 
 
 def render_holdings_panel():
