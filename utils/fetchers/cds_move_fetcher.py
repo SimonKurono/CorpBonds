@@ -1,54 +1,79 @@
+# utils/fetchers/cds_move_fetcher.py ─────────────────────────────────────────────────────────
+"""Fetchers for CDS and MOVE index data."""
 
+from __future__ import annotations
+
+# ── Stdlib
 import os
-#
-from datetime import datetime
+
+# ── Third-party
 import pandas as pd
-from fredapi import Fred
 import yfinance as yf
 from dotenv import load_dotenv
+from fredapi import Fred
 
-# ───────────────────  one-time FRED client  ───────────────────
+# ── Initialize environment ──
 load_dotenv()
 FRED_API_KEY = os.getenv("FRED_API_KEY")
 if not FRED_API_KEY:
     raise RuntimeError("Missing FRED_API_KEY in .env")
+
 fred = Fred(api_key=FRED_API_KEY)
 
 
-# ───────────────────  Fetch MOVE from Yahoo ───────────────────
-def fetch_move_yahoo_series(start_date: str) -> pd.DataFrame:
+# ╭─────────────────────────── Constants ───────────────────────────╮
+CDS_PROXY_TICKER = "LQD"  # ETF proxy ticker for CDX NA IG index via X-Trackers ETF
+MOVE_TICKER = "^MOVE"
+DEFAULT_CDS_START_DATE = "2005-01-01"
+# ╰─────────────────────────────────────────────────────────────────╯
+
+
+# ╭─────────────────────────── Fetch Functions ───────────────────────────╮
+def fetch_move_yahoo_series(start_date: str = "max") -> pd.DataFrame:
     """
-    Fetches daily MOVE index from Yahoo Finance (as a fallback),
-    returns a DataFrame with a single 'MOVE' column.
+    Fetch daily MOVE index from Yahoo Finance.
+    
+    Args:
+        start_date: Start date for data retrieval (default: "max" for all history)
+    
+    Returns:
+        DataFrame with a single 'MOVE' column
     """
-    start_date = "max"
-    hist = yf.Ticker("^MOVE").history(start_date)
+    hist = yf.Ticker(MOVE_TICKER).history(start_date)
     if hist.empty:
         return pd.DataFrame()
     df = hist["Close"].rename("MOVE").to_frame()
     return df.ffill()
 
-# ───────────────────  Fetch CDS Proxy from Yahoo via CDX ───────────────────
-# ETF proxy ticker for CDX NA IG index via X-Trackers ETF
-CDS_PROXY_TICKER = "LQD"
-def fetch_cds_proxy_series(start_date: str = "2005-01-01") -> pd.DataFrame:
+
+def fetch_cds_proxy_series(start_date: str = DEFAULT_CDS_START_DATE) -> pd.DataFrame:
     """
-    Fetches the Simplify High Yield ETF (CDX) close prices from Yahoo Finance,
-    returns a DataFrame with a 'CDX IG Proxy' column.
+    Fetch CDX IG proxy from Yahoo Finance via LQD ETF.
+    
+    Args:
+        start_date: Start date for data retrieval
+    
+    Returns:
+        DataFrame with a 'CDX IG Proxy' column
     """
     hist = yf.Ticker(CDS_PROXY_TICKER).history(start=start_date)
     if hist.empty:
         return pd.DataFrame()
     df = hist["Close"].rename("CDX IG Proxy").to_frame()
     return df
+# ╰─────────────────────────────────────────────────────────────────╯
 
 
-if __name__ == "__main__":
-
+# ╭─────────────────────────── Main ───────────────────────────╮
+def main() -> None:
+    """Main entry point for testing fetchers."""
     df_move = fetch_move_yahoo_series()
-    print("MOVE tail (FRED):\n", df_move.tail(), "\n")
+    print("MOVE tail:\n", df_move.tail(), "\n")
 
     df_cds = fetch_cds_proxy_series()
     print("CDS Proxy tail:\n", df_cds.tail())
 
+
+if __name__ == "__main__":
+    main()
 

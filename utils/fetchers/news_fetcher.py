@@ -1,14 +1,20 @@
-# utils/fetchers/news_fetcher.py
+# utils/fetchers/news_fetcher.py ─────────────────────────────────────────────────────────
+"""Fetchers for news articles from NewsAPI."""
+
+from __future__ import annotations
+
+# ── Stdlib
 import os
-from typing import Iterable, Optional, Union, List, Dict, Any
-from dotenv import load_dotenv
+from typing import Any, Dict, Iterable, List, Optional, Union
+
+# ── Third-party
 import requests
-from fredapi import Fred  # kept to avoid breaking imports elsewhere
 import streamlit as st
+from dotenv import load_dotenv
 from newsapi import NewsApiClient
 from newsapi.newsapi_exception import NewsAPIException
 
-# 1) Load key from .env
+# ── Initialize environment ──
 load_dotenv()
 API_KEY = os.getenv("NEWSAPI_KEY")
 if not API_KEY:
@@ -16,7 +22,8 @@ if not API_KEY:
 
 newsapi = NewsApiClient(API_KEY)
 
-# 2) Endpoints
+
+# ╭─────────────────────────── Constants ───────────────────────────╮
 URL = "https://newsapi.org/v2/top-headlines"
 
 # Valid default sources (NewsAPI: do NOT mix country/category with 'sources')
@@ -28,12 +35,31 @@ _DEFAULT_SOURCES = [
     "cnbc",
 ]
 
+# Cache TTLs (seconds)
+TTL_HEADLINES = 60 * 30
+
+# Request defaults
+DEFAULT_PAGE_SIZE = 5
+DEFAULT_LANGUAGE = "en"
+REQUEST_TIMEOUT = 12
+# ╰─────────────────────────────────────────────────────────────────╯
+
+
+# ╭─────────────────────────── Helper Functions ───────────────────────────╮
 def _to_sources_csv(sources: Optional[Union[Dict[str, str], Iterable[str]]]) -> Optional[str]:
     """
+    Convert sources to CSV string format for NewsAPI.
+    
     Accepts:
       - dict like {"Bloomberg":"bloomberg", ...} → join VALUES
       - list/tuple/set of slugs → join directly
       - None → None
+    
+    Args:
+        sources: Sources in various formats
+    
+    Returns:
+        Comma-separated string of source slugs or None
     """
     if not sources:
         return None
@@ -45,8 +71,17 @@ def _to_sources_csv(sources: Optional[Union[Dict[str, str], Iterable[str]]]) -> 
     vals = [s for s in sources if isinstance(s, str) and s.strip()]
     return ",".join(vals) if vals else None
 
+
 def _normalize_articles(articles: Optional[List[Dict[str, Any]]]) -> List[Dict[str, Any]]:
-    """Uniform, resilient shape."""
+    """
+    Normalize articles to a uniform, resilient shape.
+    
+    Args:
+        articles: List of article dictionaries from NewsAPI
+    
+    Returns:
+        List of normalized article dictionaries
+    """
     if not articles:
         return []
     out: List[Dict[str, Any]] = []
@@ -60,49 +95,82 @@ def _normalize_articles(articles: Optional[List[Dict[str, Any]]]) -> List[Dict[s
             "title": (a.get("title") or "").strip(),
             "description": a.get("description") or "",
             "url": url,
-            "urlToImage": a.get("urlToImage"),  # keep original key for your UI
+            "urlToImage": a.get("urlToImage"),  # keep original key for UI
             "source": a.get("source") or {},
             "publishedAt": a.get("publishedAt") or "",
         })
     return out
+# ╰─────────────────────────────────────────────────────────────────╯
 
-@st.cache_data(ttl=60 * 30)
-def fetch_headlines(page_size: int = 5,
-                    sources: Optional[Union[Dict[str, str], Iterable[str]]] = None,
-                    *args) -> List[Dict[str, Any]]:
+
+# ╭─────────────────────────── Fetch Functions ───────────────────────────╮
+@st.cache_data(ttl=TTL_HEADLINES)
+def fetch_headlines(
+    page_size: int = DEFAULT_PAGE_SIZE,
+    sources: Optional[Union[Dict[str, str], Iterable[str]]] = None,
+    *args: Any
+) -> List[Dict[str, Any]]:
     """
-    Minimal, backward-compatible fix:
-    - Makes params optional (so __main__ smoke test works).
-    - Uses sources (slugs) only, per NewsAPI rule (no country/category mixed in this helper).
-    - Fixes the old 'paarams' typo; actually uses local params.
-    - Adds timeout and normalization.
+    Fetch top headlines from NewsAPI.
+    
+    Uses sources (slugs) only, per NewsAPI rule (no country/category mixed).
+    
+    Args:
+        page_size: Number of articles to fetch
+        sources: Optional sources in dict or iterable format
+        *args: Additional arguments (for backward compatibility)
+    
+    Returns:
+        List of normalized article dictionaries
     """
     params_local: Dict[str, Any] = {
         "apiKey": API_KEY,
-        "language": "en",
+        "language": DEFAULT_LANGUAGE,
         "pageSize": page_size,
     }
     joined = _to_sources_csv(sources) or _to_sources_csv(_DEFAULT_SOURCES)
     if joined:
         params_local["sources"] = joined
 
-    resp = requests.get(URL, params=params_local, timeout=12)
+    resp = requests.get(URL, params=params_local, timeout=REQUEST_TIMEOUT)
     resp.raise_for_status()
     data = resp.json()
     return _normalize_articles(data.get("articles", []))
 
-def fetch_all_news(query: str,
-                   sources: Optional[Union[Dict[str, str], Iterable[str]]],
-                   domains: Optional[Union[Dict[str, str], Iterable[str]]],
-                   from_date: str,
-                   to_date: str,
-                   language: str = "en",
-                   sort: str = "relevancy",
-                   page: int = 2,
-                   page_num: int = 5) -> List[Dict[str, Any]]:
+
+def fetch_all_news(
+    query: str,
+    sources: Optional[Union[Dict[str, str], Iterable[str]]],
+    domains: Optional[Union[Dict[str, str], Iterable[str]]],
+    from_date: str,
+    to_date: str,
+    language: str = DEFAULT_LANGUAGE,
+    sort: str = "relevancy",
+    page: int = 2,
+    page_num: int = 5
+) -> List[Dict[str, Any]]:
     """
-    Keeps your signature. Accepts dicts (labels→slugs) or iterables of slugs.
+    Fetch all news articles using NewsAPI Everything endpoint.
+    
+    Accepts dicts (labels→slugs) or iterables of slugs.
     Returns normalized article dicts.
+    
+    Args:
+        query: Search query string
+        sources: Optional sources in dict or iterable format
+        domains: Optional domains in dict or iterable format
+        from_date: Start date (ISO format)
+        to_date: End date (ISO format)
+        language: Language code (default: "en")
+        sort: Sort order (default: "relevancy")
+        page: Page number
+        page_num: Number of articles per page
+    
+    Returns:
+        List of normalized article dictionaries
+    
+    Raises:
+        RuntimeError: If NewsAPI request fails
     """
     try:
         all_articles = newsapi.get_everything(
@@ -114,14 +182,23 @@ def fetch_all_news(query: str,
             language=language,
             sort_by=sort,
             page=page,
-            page_size=page_num,  
+            page_size=page_num,
         )
     except NewsAPIException as e:
         raise RuntimeError(f"NewsAPI error (everything): {e}") from e
 
     return _normalize_articles(all_articles.get("articles", []))
+# ╰─────────────────────────────────────────────────────────────────╯
 
-if __name__ == "__main__":
+
+# ╭─────────────────────────── Main ───────────────────────────╮
+def main() -> None:
+    """Main entry point for testing news fetcher."""
     for art in fetch_headlines():
         src = (art.get("source") or {}).get("name", "")
-        print(f"{art.get('publishedAt','')[:10]} | {src}\n  {art.get('title','')}\n")
+        print(f"{art.get('publishedAt', '')[:10]} | {src}\n  {art.get('title', '')}\n")
+
+
+if __name__ == "__main__":
+    main()
+
