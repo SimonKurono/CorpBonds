@@ -1,6 +1,6 @@
-# pages/Portfolio.py
+# pages/Portfolio.py ─────────────────────────────────────────────────────────
 """
-Portfolio Management & Analysis Page
+Portfolio Management & Analysis Page.
 
 Features:
 - View current portfolio holdings
@@ -10,22 +10,28 @@ Features:
 
 from __future__ import annotations
 
-import streamlit as st
-import pandas as pd
-import numpy as np
-import plotly.graph_objects as go
-import plotly.express as px
-import yfinance as yf
+# ── Stdlib
 from datetime import datetime, timedelta
+from typing import Any, Dict, List, Mapping
+
+# ── Third-party
+import numpy as np
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import streamlit as st
+import yfinance as yf
+
+# ── Local
 import utils.ui as ui
 
 
-# ╭─────────────────────────── Constants & Configuration ───────────────────────────╮
+# ╭─────────────────────────── Constants ───────────────────────────╮
 FIG_TEMPLATE = "plotly_white"
 FIG_MARGIN = dict(t=50, b=40, l=40, r=40)
 RISK_FREE_RATE = 0.02  # Placeholder: 2% annual risk-free rate
-
-
+HISTORY_DAYS = 365  # Days of historical data for returns calculation
+CHART_HISTORY_DAYS = 180  # Days of historical data for stock charts
 # ╰─────────────────────────────────────────────────────────────────╯
 
 
@@ -113,7 +119,7 @@ def calculate_returns() -> dict:
     # Get historical prices for all holdings
     tickers = holdings_df["Ticker"].tolist()
     end_date = datetime.now()
-    start_date = end_date - timedelta(days=365)  # 1 year of history
+    start_date = end_date - timedelta(days=HISTORY_DAYS)
     
     try:
         prices_df = yf.download(tickers, start=start_date, end=end_date, progress=False)
@@ -198,22 +204,22 @@ def calculate_portfolio_metrics(returns: pd.Series) -> dict:
 
 
 # ╭─────────────────────────── Render Functions ───────────────────────────╮
-def render_header():
-    """Configure page header."""
+def render_header() -> None:
+    """Configure page header and layout."""
     ui.configure_page(page_title="Portfolio Management", page_icon="💼", layout="wide")
     ui.render_sidebar()
 
 
-def render_stock_chart(ticker: str):
+def render_stock_chart(ticker: str) -> None:
     """Render a stock price chart for the given ticker."""
     if not ticker:
         st.info("Enter or select a ticker to view chart")
         return
     
     try:
-        # Get historical data (last 6 months)
+        # Get historical data
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=180)
+        start_date = end_date - timedelta(days=CHART_HISTORY_DAYS)
         
         stock_data = yf.download(ticker, start=start_date, end=end_date, progress=False)
         
@@ -325,7 +331,7 @@ def render_stock_chart(ticker: str):
         st.exception(e)
 
 
-def render_trade_panel():
+def render_trade_panel() -> None:
     """Render buy/sell trading panel."""
     st.header("💰 Trade")
     st.caption("Buy or sell stocks to manage your portfolio")
@@ -401,7 +407,7 @@ def render_trade_panel():
         render_stock_chart(display_ticker)    
 
 
-def render_holdings_panel():
+def render_holdings_panel() -> None:
     """Display current portfolio holdings."""
     st.header("📊 Current Holdings")
     
@@ -434,7 +440,7 @@ def render_holdings_panel():
         st.plotly_chart(fig_pie, use_container_width=True)
 
 
-def render_performance_panel():
+def render_performance_panel() -> None:
     """Display portfolio performance metrics and charts."""
     st.header("📈 Performance Analysis")
     
@@ -489,7 +495,7 @@ def render_performance_panel():
     st.caption("📝 TODO: Return attribution analysis by sector/asset class will be added here")
 
 
-def render_transaction_history():
+def render_transaction_history() -> None:
     """Display transaction history."""
     st.header("📜 Transaction History")
     
@@ -510,27 +516,27 @@ def render_transaction_history():
 # ╰─────────────────────────────────────────────────────────────────╯
 
 
-# ╭─────────────────────────── Main Page Logic ───────────────────────────╮
-def main():
+# ╭─────────────────────────── Main ───────────────────────────╮
+def main() -> None:
     """Main page entry point."""
     init_session_state()
     render_header()
-    
+
     # Create tabs for different sections
     tab1, tab2, tab3, tab4 = st.tabs(["💰 Trade", "📊 Holdings", "📈 Performance", "📜 History"])
-    
+
     with tab1:
         render_trade_panel()
-    
+
     with tab2:
         render_holdings_panel()
-    
+
     with tab3:
         render_performance_panel()
-    
+
     with tab4:
         render_transaction_history()
-    
+
     # Footer notes
     st.divider()
     st.caption("💡 Note: This is a demo portfolio. All data is stored in session state and will be lost when you refresh the page.")
