@@ -72,7 +72,7 @@ def render_header() -> None:
     """Configure page header and layout."""
     ui.configure_page(page_title="News Search & Analysis", page_icon="📰", layout="wide")
     ui.render_sidebar()
-    st.title("News Search & Analysis")
+    #st.title("News Search & Analysis")
 
 
 def render_search_parameters() -> tuple[List[str], List[str], str, dt.date, dt.date, bool]:
