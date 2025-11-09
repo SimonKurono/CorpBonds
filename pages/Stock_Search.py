@@ -25,9 +25,11 @@ import utils.ui as ui
 
 # ╭─────────────────────────── Constants ───────────────────────────╮
 DEFAULT_TICKER = "AAPL"
-DEFAULT_BENCHMARK = "SPY"
 DEFAULT_START_DATE = "2023-01-01"
 FIG_TEMPLATE = "plotly_white"
+DEFAULT_BENCHMARKS = ["SPY", "QQQ", "IWM", "DIA", "TLT", "GLD", "LQD", "JNK", "BIL"]
+DEFAULT_BENCHMARK = "SPY"
+MAX_BENCHMARKS = 5
 # ╰─────────────────────────────────────────────────────────────────╯
 
 
@@ -52,73 +54,108 @@ def get_stock_data(ticker_symbol: str, start_date: date, end_date: date) -> Opti
 
         if pd.api.types.is_datetime64_any_dtype(data.index):
             data.index = data.index.tz_localize(None)
-
+        if isinstance(data.columns, pd.MultiIndex):
+            data = data.droplevel(1, axis=1)
         return data
     except Exception as e:
         st.error(f"An error occurred while fetching data for {ticker_symbol}: {e}")
         return None
 
 
+def get_multiple_stock_data(
+    tickers: list[str],
+    start_date: date,
+    end_date: date,
+) -> dict[str, pd.DataFrame]:
+    """Fetch historical data for multiple tickers (max configured)."""
+    datasets: dict[str, pd.DataFrame] = {}
+    seen: set[str] = set()
+    for ticker in tickers:
+        symbol = ticker.upper().strip()
+        if not symbol or symbol in seen:
+            continue
+        seen.add(symbol)
+        if len(datasets) >= MAX_BENCHMARKS:
+            break
+        data = get_stock_data(symbol, start_date, end_date)
+        if data is not None and not data.empty:
+            datasets[symbol] = data
+    return datasets
+
+
 def plot_normalized_data(
     data: pd.DataFrame,
-    benchmark_data: Optional[pd.DataFrame],
+    benchmark_data: dict[str, pd.DataFrame],
     primary_ticker: str,
-    benchmark_ticker: Optional[str],
 ) -> go.Figure:
     """
     Create an interactive Plotly chart showing normalized performance.
-    
-    Normalizes both series to start at 100 for fair performance comparison.
-    
-    Args:
-        data: Primary stock data DataFrame
-        benchmark_data: Optional benchmark data DataFrame
-        primary_ticker: Primary ticker symbol
-        benchmark_ticker: Optional benchmark ticker symbol
-    
-    Returns:
-        Plotly Figure object
+
+    Normalizes all series to start at 100 for fair performance comparison.
     """
     fig = go.Figure()
 
-    # Reset data columns to standard format if needed
-    if isinstance(data.columns, pd.MultiIndex):
-        data = data.droplevel(1, axis=1)
-    if benchmark_data is not None and isinstance(benchmark_data.columns, pd.MultiIndex):
-        benchmark_data = benchmark_data.droplevel(1, axis=1)
+    primary_close = _closing_price_series(data)
+    primary_normalized = _normalize_series(primary_close)
 
-    # Normalize the data: divide each closing price by the first closing price and multiply by 100
-    primary_normalized = (data['Close'] / data['Close'].iloc[0]) * 100
+    fig.add_trace(
+        go.Scatter(
+            x=primary_normalized.index,
+            y=primary_normalized,
+            mode="lines",
+            name=primary_ticker,
+        )
+    )
 
-    # Add primary stock trace
-    fig.add_trace(go.Scatter(
-        x=primary_normalized.index,
-        y=primary_normalized,
-        mode='lines',
-        name=primary_ticker
-    ))
+    for benchmark_ticker, benchmark_df in benchmark_data.items():
+        benchmark_close = _closing_price_series(benchmark_df)
+        if benchmark_close.empty:
+            continue
+        benchmark_normalized = _normalize_series(benchmark_close)
+        fig.add_trace(
+            go.Scatter(
+                x=benchmark_normalized.index,
+                y=benchmark_normalized,
+                mode="lines",
+                name=f"{benchmark_ticker} (Benchmark)",
+                line=dict(dash="dot"),
+            )
+        )
 
-    # Add benchmark trace if data is available
-    if benchmark_data is not None and not benchmark_data.empty:
-        benchmark_normalized = (benchmark_data['Close'] / benchmark_data['Close'].iloc[0]) * 100
-        fig.add_trace(go.Scatter(
-            x=benchmark_normalized.index,
-            y=benchmark_normalized,
-            mode='lines',
-            name=f"{benchmark_ticker} (Benchmark)",
-            line=dict(dash='dot', color='orange')
-        ))
-
-    # Customize layout for the normalized chart
-    title = f'Performance Chart: {primary_ticker} vs. {benchmark_ticker}' if benchmark_ticker else f'{primary_ticker} Performance'
+    benchmark_label = ", ".join(benchmark_data.keys())
+    title = f"Performance: {primary_ticker} vs. {benchmark_label}" if benchmark_label else f"{primary_ticker} Performance"
     fig.update_layout(
         title=title,
-        xaxis_title='Date',
-        yaxis_title='Normalized Price (Start = 100)',
-        legend_title='Ticker',
-        template=FIG_TEMPLATE
+        xaxis_title="Date",
+        yaxis_title="Normalized Price (Start = 100)",
+        legend_title="Ticker",
+        template=FIG_TEMPLATE,
     )
     return fig
+
+
+def _closing_price_series(data: pd.DataFrame) -> pd.Series:
+    """Extract a clean close-price series from a stock DataFrame."""
+    if "Close" in data.columns:
+        series = data["Close"]
+    elif not data.columns.empty:
+        series = data.iloc[:, 0]
+    else:
+        series = pd.Series(dtype=float)
+    series = series.sort_index().dropna()
+    if isinstance(series.index, pd.DatetimeIndex) and series.index.tz is not None:
+        series.index = series.index.tz_localize(None)
+    return series
+
+
+def _normalize_series(series: pd.Series) -> pd.Series:
+    """Normalize price series to start at 100."""
+    if series.empty:
+        return series
+    base_value = series.iloc[0]
+    if base_value == 0:
+        return series
+    return (series / base_value) * 100
 # ╰─────────────────────────────────────────────────────────────────╯
 
 
@@ -129,7 +166,7 @@ def render_header() -> None:
     ui.render_sidebar()
 
 
-def render_search_parameters() -> tuple[str, Optional[str], date, date]:
+def render_search_parameters() -> tuple[str, list[str], date, date]:
     """Render search parameter inputs and return user selections."""
     st.header("Search Parameters")
     ticker_col1, ticker_col2, col1, col2 = st.columns(4)
@@ -137,8 +174,13 @@ def render_search_parameters() -> tuple[str, Optional[str], date, date]:
     with ticker_col1:
         primary_ticker = st.text_input("Enter a Stock or ETF Ticker", DEFAULT_TICKER).upper()
     with ticker_col2:
-        benchmark_ticker_input = st.text_input("Enter a Benchmark Ticker (Optional)", DEFAULT_BENCHMARK).upper()
-        benchmark_ticker = benchmark_ticker_input if benchmark_ticker_input else None
+        benchmark_ticker_inputs = st.multiselect(
+            "Select Benchmark Tickers (Optional)",
+            options=DEFAULT_BENCHMARKS,
+            default=[DEFAULT_BENCHMARK],
+            key="benchmark_ticker_input",
+            max_selections=MAX_BENCHMARKS,
+        )
     with col1:
         start_date = st.date_input("Start Date", pd.to_datetime(DEFAULT_START_DATE))
     with col2:
@@ -146,7 +188,7 @@ def render_search_parameters() -> tuple[str, Optional[str], date, date]:
 
     st.write("---")
 
-    return primary_ticker, benchmark_ticker, start_date, end_date
+    return primary_ticker, benchmark_ticker_inputs, start_date, end_date
 
 
 def render_stock_info(ticker: str) -> None:
@@ -165,7 +207,12 @@ def render_stock_info(ticker: str) -> None:
         st.write(ticker_info.info.get('longBusinessSummary', 'No description available.'))
 
 
-def render_chart(primary_ticker: str, benchmark_ticker: Optional[str], start_date: date, end_date: date) -> None:
+def render_chart(
+    primary_ticker: str,
+    benchmark_ticker_inputs: list[str],
+    start_date: date,
+    end_date: date,
+) -> None:
     """Render normalized performance chart."""
     stock_data = get_stock_data(primary_ticker, start_date, end_date)
 
@@ -174,12 +221,12 @@ def render_chart(primary_ticker: str, benchmark_ticker: Optional[str], start_dat
 
     render_stock_info(primary_ticker)
 
-    benchmark_data = None
-    if benchmark_ticker:
-        benchmark_data = get_stock_data(benchmark_ticker, start_date, end_date)
+    benchmark_data: dict[str, pd.DataFrame] = {}
+    if benchmark_ticker_inputs:
+        benchmark_data = get_multiple_stock_data(benchmark_ticker_inputs, start_date, end_date)
 
     # Render normalized performance chart
-    fig = plot_normalized_data(stock_data, benchmark_data, primary_ticker, benchmark_ticker)
+    fig = plot_normalized_data(stock_data, benchmark_data, primary_ticker)
     st.plotly_chart(fig, use_container_width=True)
 
     # Display raw data snapshot
@@ -194,11 +241,11 @@ def main() -> None:
     render_header()
 
     # Get search parameters from UI
-    primary_ticker, benchmark_ticker, start_date, end_date = render_search_parameters()
+    primary_ticker, benchmark_ticker_inputs, start_date, end_date = render_search_parameters()
 
     # Render chart if ticker is provided
     if primary_ticker:
-        render_chart(primary_ticker, benchmark_ticker, start_date, end_date)
+        render_chart(primary_ticker, benchmark_ticker_inputs, start_date, end_date)
 
 
 if __name__ == "__main__":
