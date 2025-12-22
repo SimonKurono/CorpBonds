@@ -1,5 +1,5 @@
 # app.py  ─────────────────────────────────────────────────────────
-"""Raffles Advisors – US Corporate-Bond Dashboard (Streamlit)."""
+"""Fixed Income Page"""
 
 from __future__ import annotations
 
@@ -115,7 +115,7 @@ def get_move(start_date: str) -> pd.DataFrame:
 
 # ╭────────────────────────── Render sections ──────────────────────╮
 def render_header() -> None:
-    ui.configure_page(page_title="Raffles Advisors – US Corporate-Bond Dashboard", page_icon="🏦", layout="wide")
+    ui.configure_page(page_title="Fixed Income", page_icon="🏦", layout="wide")
     st.markdown("<style>.block-container{margin-left:auto;margin-right:auto;}</style>", unsafe_allow_html=True)
     
 
