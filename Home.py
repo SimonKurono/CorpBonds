@@ -22,6 +22,7 @@ HERO_KPIS = (
 
 FEATURES = [
     ("📊 Market Dashboard", "Curves, OAS & sector heatmaps at a glance.", "pages/Dashboard.py"),
+    ("📜 FINRA FI Metrics", "TRACE-based breadth, sentiment, capped volume, Treasuries.", "pages/Finra_Fixed_Income.py"),
     ("🧮 Quant / RV", "z-scores, beta/alpha, tracking error, correlations.", "pages/Quant_Playground.py"),
     ("💼 Portfolio + Benchmarks", "TWR returns, drawdowns; SPY/LQD/HYG one-click.", "pages/Portfolio.py"),
     ("📰 News", "Curated feed with issuer/sector filters + AI summaries.", "pages/News.py"),
@@ -158,4 +159,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
