@@ -235,6 +235,12 @@ def compute_price_statistics(
         "mean": None,
         "std": None,
         "var": None,
+        "benchmark_mean": None,
+        "benchmark_std": None,
+        "benchmark_var": None,
+        "mean_delta": None,
+        "std_delta": None,
+        "var_delta": None,
         "beta": None,
         "market_cap": None,
         "analyst_mean": None,
@@ -249,6 +255,12 @@ def compute_price_statistics(
     stats["var"] = float(close_series.var())
 
     if not benchmark_series.empty:
+        stats["benchmark_mean"] = float(benchmark_series.mean())
+        stats["benchmark_std"] = float(benchmark_series.std())
+        stats["benchmark_var"] = float(benchmark_series.var())
+        stats["mean_delta"] = stats["mean"] - stats["benchmark_mean"]
+        stats["std_delta"] = stats["std"] - stats["benchmark_std"]
+        stats["var_delta"] = stats["var"] - stats["benchmark_var"]
         stats["beta"] = _compute_beta(close_series, benchmark_series)
 
     stats["analyst_mean"], stats["analyst_rating"], stats["analyst_diff"] = _summarize_price_targets(
@@ -369,11 +381,26 @@ def render_extended_sections(
     with col1:
         st.metric("Market Cap", _format_currency(market_cap))
     with col2:
-        st.metric("Daily Std Dev", _format_number(stats.get("std")))
+        std_delta = stats.get("std_delta")
+        st.metric(
+            "Daily Std Dev",
+            _format_number(stats.get("std")),
+            _format_number(std_delta) if std_delta is not None else None,
+        )
     with col3:
-        st.metric("Daily Mean", _format_number(stats.get("mean")))
+        mean_delta = stats.get("mean_delta")
+        st.metric(
+            "Daily Mean",
+            _format_number(stats.get("mean")),
+            _format_number(mean_delta) if mean_delta is not None else None,
+        )
     with col4:
-        st.metric("Daily Variance", _format_number(stats.get("var")))
+        var_delta = stats.get("var_delta")
+        st.metric(
+            "Daily Variance",
+            _format_number(stats.get("var")),
+            _format_number(var_delta) if var_delta is not None else None,
+        )
 
     col5, col6, col7, col8 = st.columns(4)
     with col5:
@@ -453,11 +480,12 @@ def render_chart(
         extended_data.get("price_targets"),
     )
     market_cap = extended_data.get("info", {}).get("marketCap")
-    render_extended_sections(primary_ticker, market_cap, stats, extended_data)
 
     # Render normalized performance chart
     fig = plot_normalized_data(stock_data, benchmark_data, primary_ticker)
     st.plotly_chart(fig, use_container_width=True)
+
+    render_extended_sections(primary_ticker, market_cap, stats, extended_data)
 
     # Display raw data snapshot
     st.subheader("Raw Data Snapshot")
@@ -471,14 +499,14 @@ def _format_currency(value: Optional[float]) -> str:
         return "N/A"
     if value > 1_000_000_000:
         return f"${value / 1_000_000_000:,.2f}B"
-    return f"${value:,.0f}"
+    return f"${value:,.2f}"
 
 
 def _format_number(value: Optional[float]) -> str:
     """Format numeric value with reasonable precision."""
     if value is None or pd.isna(value):
         return "N/A"
-    return f"{value:,.4f}"
+    return f"{value:,.2f}"
 
 
 # ╭─────────────────────────── Main ───────────────────────────╮
