@@ -190,14 +190,19 @@ def fetch_extended_ticker_data(
 
 def _to_standard_frame(data: Optional[pd.DataFrame]) -> Optional[pd.DataFrame]:
     """Return a dataframe with a clean index, or None."""
-    if data is None or isinstance(data, dict):
-        return pd.DataFrame(data) if data else None
+    if data is None:
+        return None
+    if isinstance(data, dict):
+        return pd.DataFrame([data]) if data else None
+    if isinstance(data, pd.Series):
+        return data.to_frame().T if not data.empty else None
     if isinstance(data, pd.DataFrame):
         df = data.copy()
         if isinstance(df.columns, pd.MultiIndex):
             df.columns = df.columns.get_level_values(0)
         return df
     return None
+
 
 
 def _fetch_option_chain(ticker_obj: yf.Ticker) -> Optional[pd.DataFrame]:
@@ -273,15 +278,19 @@ def _summarize_price_targets(
     price_targets: Optional[pd.DataFrame],
 ) -> tuple[Optional[float], str, Optional[str]]:
     """Summarize analyst price targets into a rating."""
-    if current_price <= 0 or not price_targets:
+    if current_price <= 0 or price_targets is None:
         return None, "N/A", None
 
     mean_target = None
     if isinstance(price_targets, pd.DataFrame):
-        first_row = price_targets.iloc[0] if not price_targets.empty else None
+        if price_targets.empty:
+            return None, "N/A", None
+        first_row = price_targets.iloc[0]
         if first_row is not None:
             mean_target = first_row.get("targetMean") or first_row.get("mean")
     elif isinstance(price_targets, dict):
+        if not price_targets:
+            return None, "N/A", None
         mean_target = price_targets.get("mean") or price_targets.get("targetMean")
 
     if not mean_target:
@@ -366,7 +375,7 @@ def render_extended_sections(
     with col4:
         st.metric("Daily Variance", _format_number(stats.get("var")))
 
-    col5, col6, col7 = st.columns(3)
+    col5, col6, col7, col8 = st.columns(4)
     with col5:
         st.metric("Beta vs SPY", _format_number(stats.get("beta")))
     with col6:
@@ -377,11 +386,15 @@ def render_extended_sections(
         )
     with col7:
         st.metric("Analyst Rating", stats.get("analyst_rating", "N/A"))
+    with col8:
+        st.metric("As of", datetime.now().strftime("%Y-%m-%d"))
 
     st.subheader("Reference Materials")
     with st.expander("Analyst Price Targets"):
         targets = extended_data.get("price_targets")
-        if targets:
+        if isinstance(targets, pd.DataFrame) and not targets.empty:
+            st.dataframe(targets)
+        elif isinstance(targets, dict) and targets:
             st.dataframe(pd.DataFrame([targets]))
         else:
             st.info("No analyst price target data available.")
@@ -456,6 +469,8 @@ def _format_currency(value: Optional[float]) -> str:
     """Format numeric value as currency string."""
     if value is None or pd.isna(value):
         return "N/A"
+    if value > 1_000_000_000:
+        return f"${value / 1_000_000_000:,.2f}B"
     return f"${value:,.0f}"
 
 
