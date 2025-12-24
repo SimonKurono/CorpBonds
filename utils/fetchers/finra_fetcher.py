@@ -29,6 +29,9 @@ FINRA_QA_TOKEN_URL = os.getenv(
     "https://ews-qaint.fip.qa.finra.org/fip/rest/ews/oauth2/access_token?grant_type=client_credentials",
 )
 
+# API key (optional but preferred if provided)
+FINRA_API_KEY = os.getenv("FINRA_API_KEY")
+
 # Credentials
 FINRA_CLIENT_ID = os.getenv("FINRA_CLIENT_ID")
 FINRA_CLIENT_SECRET = os.getenv("FINRA_CLIENT_SECRET")
@@ -91,6 +94,12 @@ def _auth_header(env: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"} if token else {}
 
 
+def _api_key_header() -> dict[str, str]:
+    """Return X-API-KEY header if configured (env or secrets)."""
+    api_key = FINRA_API_KEY or _get_secret("FINRA_API_KEY")
+    return {"X-API-KEY": api_key} if api_key else {}
+
+
 @st.cache_data(ttl=DATA_TTL, show_spinner=False)
 def fetch_dataset(
     group: str,
@@ -124,6 +133,7 @@ def fetch_dataset(
     url = f"{base_url}/data/group/{group}/name/{name}"
 
     headers = {"Accept": accept}
+    headers.update(_api_key_header())
     headers.update(_auth_header(env))
 
     try:
