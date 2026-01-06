@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-# ── Stdlib
+# ── Std lib
 from datetime import datetime
 from typing import Any, Callable, Dict, List, Mapping, Tuple
 
