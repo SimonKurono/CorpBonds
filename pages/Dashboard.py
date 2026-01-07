@@ -39,7 +39,7 @@ TTL_MOVE = 60 * 60
 # ╭──────────────────────── Helpers and caching ──────────────────────╮
 @st.cache_data(ttl=TTL_HEADLINES, show_spinner=False)
 def load_headlines() -> List[Dict[str, Any]]:
-    """Cached wrapper for NewsAPI headlines."""
+    """Cached wrapper for NewsAPI headlines. """
     try:
         return nf.fetch_headlines(HEADLINE_COUNT)
     except Exception as exc:
