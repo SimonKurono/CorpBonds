@@ -18,12 +18,20 @@ import utils.fetchers.news_fetcher as nf
 import utils.fetchers.rate_fetcher as rf
 import utils.fetchers.oas_fetcher as of
 import utils.fetchers.cds_move_fetcher as cmf
+import utils.fetchers.yield_bucket_fetcher as ybf
 import utils.ui as ui
 
 
 # ╭─────────────────────────── Constants ───────────────────────────╮
 HEADLINE_COUNT = 3
-DEFAULT_WIDGETS = ("Headlines", "Core Rates", "OAS (IG vs HY)", "MOVE Index")
+DEFAULT_WIDGETS = (
+    "Headlines",
+    "Core Rates",
+    "OAS (IG vs HY)",
+    "Yield by Rating",
+    "MOVE Index",
+    "CDX IG Proxy",
+)
 MAX_COLUMNS = 3
 MIN_COLUMNS = 1
 DEFAULT_COLUMNS = 2
@@ -33,6 +41,12 @@ TTL_HEADLINES = 60 * 30
 TTL_RATES = 60 * 60
 TTL_OAS = 60 * 60
 TTL_MOVE = 60 * 60
+TTL_YIELD_BY_RATING = 60 * 60 * 6
+TTL_CDS_PROXY = 60 * 60
+
+YIELD_RATING_POINTS = 52
+CDS_TAIL_POINTS = 180
+CDS_START_DATE = "2022-01-01"
 # ╰─────────────────────────────────────────────────────────────────╯
 
 
@@ -74,6 +88,26 @@ def load_move_series() -> pd.DataFrame:
         return cmf.fetch_move_yahoo_series("2020-01-01")
     except Exception as exc:
         st.error(f"MOVE fetch failed: {exc}")
+        return pd.DataFrame()
+
+
+@st.cache_data(ttl=TTL_YIELD_BY_RATING, show_spinner=False)
+def load_yield_by_rating() -> pd.DataFrame:
+    """Cached wrapper for yield by rating from FRED."""
+    try:
+        return ybf.fetch_yield_by_rating()
+    except Exception as exc:
+        st.error(f"Yield by rating failed: {exc}")
+        return pd.DataFrame()
+
+
+@st.cache_data(ttl=TTL_CDS_PROXY, show_spinner=False)
+def load_cds_proxy_series() -> pd.DataFrame:
+    """Cached wrapper for CDX IG proxy from Yahoo Finance."""
+    try:
+        return cmf.fetch_cds_proxy_series(CDS_START_DATE)
+    except Exception as exc:
+        st.error(f"CDX proxy failed: {exc}")
         return pd.DataFrame()
 # ╰─────────────────────────────────────────────────────────────────╯
 
@@ -147,6 +181,57 @@ def render_widget_move(data: pd.DataFrame) -> None:
     )
     fig.update_layout(margin=dict(t=40, b=30, l=40, r=10), template="plotly_white", yaxis_title="Index")
     st.plotly_chart(fig, use_container_width=True)
+
+
+def render_widget_yield_by_rating(data: pd.DataFrame) -> None:
+    st.markdown("#### Yield by Rating")
+    if data is None or data.empty:
+        st.info("No yield data.")
+        return
+    recent = data.tail(YIELD_RATING_POINTS)
+    fig = px.line(
+        recent,
+        x=recent.index,
+        y=list(recent.columns),
+        labels={"value": "Yield (bp)", "index": "Date"},
+        title="Yield by Rating (weekly)",
+    )
+    fig.update_layout(
+        margin=dict(t=40, b=30, l=40, r=10),
+        template="plotly_white",
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+    )
+    st.plotly_chart(fig, use_container_width=True)
+    latest = data.iloc[-1]
+    key_labels = [label for label in ("AAA", "BBB", "BB", "B", "CCC & Below") if label in data.columns]
+    if key_labels:
+        latest_str = " • ".join(f"{label} {latest[label]:.0f} bp" for label in key_labels)
+        st.caption(f"Latest: {latest_str}")
+
+
+def render_widget_cds_proxy(data: pd.DataFrame) -> None:
+    st.markdown("#### CDX IG Proxy (LQD)")
+    if data is None or data.empty or "CDX IG Proxy" not in data.columns:
+        st.info("No CDX proxy data.")
+        return
+    series = data["CDX IG Proxy"].dropna()
+    if series.empty:
+        st.info("No CDX proxy data.")
+        return
+    latest = series.iloc[-1]
+    prev = series.iloc[-2] if len(series) >= 2 else latest
+    st.metric("LQD Close", f"{latest:.2f}", f"{(latest - prev):+.2f}")
+    recent = series.tail(CDS_TAIL_POINTS)
+    fig = px.area(
+        recent.to_frame(),
+        x=recent.index,
+        y="CDX IG Proxy",
+        labels={"index": "Date", "CDX IG Proxy": "Price"},
+        title="CDX IG Proxy (LQD ETF)",
+    )
+    fig.update_layout(margin=dict(t=40, b=30, l=40, r=10), template="plotly_white", yaxis_title="Price")
+    st.plotly_chart(fig, use_container_width=True)
+    st.caption("Uses LQD as a proxy for CDX NA IG levels.")
 # ╰─────────────────────────────────────────────────────────────────╯
 
 
@@ -178,6 +263,18 @@ WIDGETS: Dict[str, Dict[str, Any]] = {
         "renderer": render_widget_move,
         "default_width": 1,
         "description": "MOVE metric and recent trend.",
+    },
+    "Yield by Rating": {
+        "loader": load_yield_by_rating,
+        "renderer": render_widget_yield_by_rating,
+        "default_width": 2,
+        "description": "Weekly yield curves by rating bucket.",
+    },
+    "CDX IG Proxy": {
+        "loader": load_cds_proxy_series,
+        "renderer": render_widget_cds_proxy,
+        "default_width": 1,
+        "description": "LQD proxy for CDX IG levels.",
     },
 }
 # ╰─────────────────────────────────────────────────────────────────╯
