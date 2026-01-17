@@ -31,6 +31,22 @@ st.markdown("""
 Generate structured buy-side credit analysis. Provide issuer details and context below.
 """)
 
+with st.expander("ℹ️ About this Tool", expanded=False):
+    st.info(
+        """
+        **What it does:** This tool uses Google's **Gemini 1.5 Pro** LLM to act as a senior credit analyst. 
+        It ingests your qualitative inputs and generates a structured "Memo" typical of buy-side investment committees.
+
+        **What it outputs:**
+        - **Risk Analysis**: Solvency, liquidity, and business model risks.
+        - **Macro Sensitivity**: How rates/inflation impact the issuer.
+        - **Scenario Planning**: Bull/Bear/Base case outcomes.
+        - **Confidence Score**: The model's self-assessed certainty based on provided context.
+        
+        *Note: No data is stored reliably. Please export results to Markdown if needed.*
+        """
+    )
+
 st.divider()
 
 # --- INPUT SECTION ---
