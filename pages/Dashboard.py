@@ -83,8 +83,12 @@ def load_oas_series() -> pd.DataFrame:
 
 @st.cache_data(ttl=TTL_MOVE, show_spinner=False)
 def load_move_series() -> pd.DataFrame:
-    """Cached wrapper for MOVE index from Yahoo Finance."""
+    """Cached wrapper for MOVE index from Yahoo Finance.
+    
+    Refreshes automatically when code changes.
+    """
     try:
+        # Fetch data starting from 2020
         return cmf.fetch_move_yahoo_series("2020-01-01")
     except Exception as exc:
         st.error(f"MOVE fetch failed: {exc}")
@@ -383,7 +387,7 @@ def _render_grid(layout: List[Dict[str, Any]], columns: int, data: Dict[str, Any
 def render_header() -> None:
     """Configure page header and sidebar."""
     ui.configure_page(page_title="Dashboard", page_icon="🧭", layout="wide")
-    ui.render_sidebar()
+    
     st.caption("Drag-free but flexible grid: choose columns, widths, and which widgets to show.")
 
 

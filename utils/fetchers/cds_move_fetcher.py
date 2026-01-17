@@ -39,7 +39,13 @@ def fetch_move_yahoo_series(start_date: str = "max") -> pd.DataFrame:
     Returns:
         DataFrame with a single 'MOVE' column
     """
-    hist = yf.Ticker(MOVE_TICKER).history(start_date)
+    # Determine if start_date is a period alias or a date
+    valid_periods = {"1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"}
+    if start_date in valid_periods:
+        hist = yf.Ticker(MOVE_TICKER).history(period=start_date)
+    else:
+        # Assume it's a date string
+        hist = yf.Ticker(MOVE_TICKER).history(start=start_date)
     if hist.empty:
         return pd.DataFrame()
     df = hist["Close"].rename("MOVE").to_frame()
