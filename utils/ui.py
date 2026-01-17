@@ -72,12 +72,12 @@ def feature_grid(features: List[Tuple[str, str, str]], columns: int = DEFAULT_FE
                 with box:
                     st.markdown(f"### {title}")
                     st.caption(desc)
-                    st.button(
+                    if st.button(
                         "Open",
                         key=f"open_{idx}",
                         use_container_width=True,
-                        on_click=lambda t=target: go(t)
-                    )
+                    ):
+                        go(target)
 
 
 def divider() -> None:

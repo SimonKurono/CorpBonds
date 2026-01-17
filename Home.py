@@ -81,17 +81,18 @@ def render_hero_section() -> None:
                 cols[i].metric(label, value)
 
             # Call-to-action buttons
-            st.button(
+            if st.button(
                 "→ Go to Dashboard",
                 type="primary",
                 use_container_width=False,
-                on_click=lambda: ui.go("pages/Dashboard.py"),
-            )
-            st.button(
+            ):
+                ui.go("pages/Dashboard.py")
+
+            if st.button(
                 "Learn more",
                 use_container_width=False,
-                on_click=lambda: ui.go("pages/Client_Login.py"),
-            )
+            ):
+                ui.go("pages/Client_Login.py")
 
         with c2:
             st.write("**Yield curve teaser**")
