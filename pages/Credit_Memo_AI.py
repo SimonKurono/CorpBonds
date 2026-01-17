@@ -34,7 +34,7 @@ Generate structured buy-side credit analysis. Provide issuer details and context
 with st.expander("ℹ️ About this Tool", expanded=False):
     st.info(
         """
-        **What it does:** This tool uses Google's **Gemini 1.5 Pro** LLM to act as a senior credit analyst. 
+        **What it does:** This tool uses Google's **Gemini 3 Flash** LLM to act as a senior credit analyst. 
         It ingests your qualitative inputs and generates a structured "Memo" typical of buy-side investment committees.
 
         **What it outputs:**
