@@ -59,6 +59,10 @@ A **Streamlit-powered analytics dashboard** for monitoring **US corporate bond m
   * Complete transaction history tracking
   * *Placeholder: Return attribution analysis and database persistence*
 
+* **Credit Memo AI** 🤖
+  * Generate buy-side credit memos using Gemini LLM with qualitative analysis, risk assessment, and scenario planning
+
+
 ### 🛠️ In Progress
 
 * **Client Login**

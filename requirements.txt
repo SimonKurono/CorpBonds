@@ -29,6 +29,7 @@ fredapi==0.5.2
 frozendict==2.4.6
 gitdb==4.0.12
 GitPython==3.1.45
+google-genai
 htbuilder==0.9.0
 idna==3.10
 importlib_metadata==8.7.0
@@ -57,6 +58,7 @@ prometheus_client==0.22.1
 protobuf==6.31.1
 pyarrow==21.0.0
 pycparser==2.22
+pydantic==2.11.0
 pydeck==0.9.1
 PyJWT==2.10.1
 pymdown-extensions==10.16.1
