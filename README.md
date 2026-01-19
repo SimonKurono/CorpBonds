@@ -1,9 +1,7 @@
 # Raffles Advisors Financial Analytics Platform
 
 ## Overview
-The Raffles Advisors platform is a centralized financial analytics dashboard designed for buy-side investment professionals. It integrates cross-asset market data—spanning US corporate bonds, equities, and derivatives—into a unified interface to streamline decision-making and portfolio management.
-
-The application leverages a modern technology stack to deliver real-time intelligence, ensuring data consistency across various analytical modules, from high-level market dashboards to granular security analysis.
+The Raffles Advisors platform is a centralized financial analytics dashboard designed for buy-side investment professionals. It includes US corporate bond, equity, and derivative data into a unified interface.
 
 ## Key Features
 
@@ -14,12 +12,13 @@ A comprehensive view of market health, featuring:
 - **Yield Curves**: Interactive visualization of yield curves broken down by credit rating (AAA through CCC).
 - **Volatility Monitoring**: Real-time tracking of the MOVE Index and VIX.
 - **Liquidity Proxies**: Monitoring of CDX IG levels via LQD proxy data.
+- Customizable dashboard with resizable widgets
 
 ### AI Credit Memo Generator
-A generative AI module that automates the creation of buy-side credit memos.
-- **Engine**: Powered by Google Gemini (Gemini-3-flash-preview).
-- **Structure**: Generates strictly formatted JSON outputs compliant with internal schemas.
-- **Analysis**: Provides qualitative assessments of issuer solvency, sector risks, and macro-sensitivity.
+A gen AI feature that automates the creation of buy-side credit memos.
+- Powered by Google Gemini (Gemini-3-flash-preview).
+- Generates strictly formatted JSON outputs compliant with internal schemas.
+- Provides qualitative assessments of issuer solvency, sector risks, and macro-sensitivity.
 
 ### Equity & ETF Search
 A fundamental analysis tool for global equities and ETFs.
@@ -35,11 +34,11 @@ An integrated position tracking system.
 
 ## Technical Architecture
 
-The platform follows a modular "fetcher-based" architecture designed for scalability and maintainability.
+The platform uses a "fetcher" architecture for scalability and maintainability.
 
-- **Frontend**: Built with Streamlit, enabling rapid iteration and a responsive web interface.
+- **Frontend**: Built with Streamlit and custom UI components
 - **Data Layer**: Centralized `fetcher` modules in the `utils/` directory handle all external API interactions. This ensures that data ingestion logic is decoupled from UI presentation.
-- **Caching**: Aggressive server-side caching strategies (using `st.cache_data`) optimize performance and minimize API rate usage.
+- **Caching**: Server-side caching strategies (using `st.cache_data`) optimize performance and minimize API rate usage.
 - **Safety**: Robust error handling ensures stability even during partial upstream API outages.
 
 ## Installation
