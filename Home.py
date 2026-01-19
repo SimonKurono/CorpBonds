@@ -1,5 +1,5 @@
 # Home.py ─────────────────────────────────────────────────────────
-"""Raffles Bond Platform Home Page."""
+"""Financial Analytics Platform Home Page."""
 
 from __future__ import annotations
 
