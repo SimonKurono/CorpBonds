@@ -540,7 +540,7 @@ def render_performance_panel() -> None:
     if not portfolio_values.empty:
         _render_portfolio_vs_benchmark_chart(portfolio_values)
 
-    st.caption("📝 TODO: Return attribution analysis by sector/asset class will be added here")
+    
 
 
 def _render_performance_metrics(metrics: Mapping[str, float]) -> None:
@@ -727,8 +727,7 @@ def main() -> None:
 
     # Footer notes
     st.divider()
-    st.caption("💡 Note: This is a demo portfolio. All data is stored in session state and will be lost when you refresh the page.")
-    st.caption("📝 TODO: Add database persistence, advanced attribution analysis, and integration with Stock Search page")
+    
 
 
 if __name__ == "__main__":
